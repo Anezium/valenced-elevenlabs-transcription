@@ -1,0 +1,30 @@
+{
+  "format": 1,
+  "name": "Anezium — Transcription ElevenLabs (expérimental)",
+  "description": "Test JS-only pour Discord 352.6 canary. Clé en mémoire, accord manuel, traitement externe potentiellement payant. Runtime téléphone et API réelle non testés.",
+  "plugins": {
+    "anezium.elevenlabs-transcription": {
+      "name": "Transcription ElevenLabs (expérimental)",
+      "description": "Transcription manuelle des vocaux existants. Confirmation avant transfert, clé en mémoire uniquement, résultat local. Aucun envoi Discord.",
+      "author": "Anezium / Forge",
+      "channels": {
+        "latest": "0.1.0"
+      },
+      "versions": {
+        "0.1.0": {
+          "url": "https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.1.0/anezium.elevenlabs-transcription@0.1.0.zip",
+          "sha256": "55aedbfe9480de98f576440c79fc8643c4258b4fb7141c63e7caebb16b3d9dcc",
+          "size": 27285,
+          "dependencies": {
+            "valenced.api": {
+              "version": "=1.0.0"
+            },
+            "discord": {
+              "version": "=352.6"
+            }
+          }
+        }
+      }
+    }
+  }
+}

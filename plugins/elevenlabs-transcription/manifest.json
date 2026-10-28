@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "id": "anezium.elevenlabs-transcription",
+  "name": "Transcription ElevenLabs (expérimental)",
+  "description": "Transcription manuelle des vocaux existants. Confirmation avant transfert, clé en mémoire uniquement, résultat local. Aucun envoi Discord.",
+  "author": "Anezium / Forge",
+  "version": "0.1.0",
+  "dependencies": {
+    "valenced.api": {"version": "=1.0.0"},
+    "discord": {"version": "=352.6"}
+  },
+  "dist": {"script": "index.js"}
+}

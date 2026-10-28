@@ -1,0 +1,11 @@
+node_modules/
+tools/node-*/
+tools/*.tar.xz
+vendor/*/.git/
+vendor/cli/dist/
+plugins/*/build/
+build/
+dist/
+tools/vendor-git/
+.env*
+*.log

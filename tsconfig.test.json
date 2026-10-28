@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
+    "strict": true, "skipLibCheck": true,
+    "lib": ["ES2022", "DOM"], "types": ["node"], "outDir": "build/tests"
+  },
+  "include": ["plugins/elevenlabs-transcription/js/core.ts", "plugins/elevenlabs-transcription/js/transport.ts", "plugins/elevenlabs-transcription/js/tree.ts", "tests/**/*.ts"]
+}
