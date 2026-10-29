@@ -1,0 +1,714 @@
+
+> valenced-elevenlabs-transcription@0.2.0-dev verify
+> npm run typecheck && npm test && npm run build:cli && npm run bundle && npm run test:lifecycle && npm run build:native && npm run package
+
+
+> valenced-elevenlabs-transcription@0.2.0-dev typecheck
+> tsc -p tsconfig.json --noEmit
+
+
+> valenced-elevenlabs-transcription@0.2.0-dev test
+> tsc -p tsconfig.test.json && node --test build/tests/tests/*.test.js
+
+TAP version 13
+# Subtest: opt-in distinct processing/cost and own public replies; no implicit activation
+ok 1 - opt-in distinct processing/cost and own public replies; no implicit activation
+  ---
+  duration_ms: 3.205421
+  type: 'test'
+  ...
+# Subtest: incoming renders locally only; own requires ACK/sent then replies to exact original without mentions
+ok 2 - incoming renders locally only; own requires ACK/sent then replies to exact original without mentions
+  ---
+  duration_ms: 1.850749
+  type: 'test'
+  ...
+# Subtest: duplicates/edit/reconnect/startup/other-channel/account/future events never processed
+ok 3 - duplicates/edit/reconnect/startup/other-channel/account/future events never processed
+  ---
+  duration_ms: 0.603267
+  type: 'test'
+  ...
+# Subtest: persistent reservation before STT; no retry after ambiguous send failure
+ok 4 - persistent reservation before STT; no retry after ambiguous send failure
+  ---
+  duration_ms: 0.891945
+  type: 'test'
+  ...
+# Subtest: permissions checked before cost and again before publication
+ok 5 - permissions checked before cost and again before publication
+  ---
+  duration_ms: 0.620542
+  type: 'test'
+  ...
+# Subtest: bounded queue and three attempts/minute, then recovery without automatic retry
+ok 6 - bounded queue and three attempts/minute, then recovery without automatic retry
+  ---
+  duration_ms: 0.803274
+  type: 'test'
+  ...
+# Subtest: pause/stop/disable/key-change cancellation and channel switch suppress late publication
+ok 7 - pause/stop/disable/key-change cancellation and channel switch suppress late publication
+  ---
+  duration_ms: 1.307943
+  type: 'test'
+  ...
+# Subtest: reservation failure, STT failure, oversized text fail safely; feedback text not a voice
+ok 8 - reservation failure, STT failure, oversized text fail safely; feedback text not a voice
+  ---
+  duration_ms: 2.106788
+  type: 'test'
+  ...
+# Subtest: resume rejects replay older than reconnect barrier; queued tasks expire before STT
+ok 9 - resume rejects replay older than reconnect barrier; queued tasks expire before STT
+  ---
+  duration_ms: 0.62841
+  type: 'test'
+  ...
+# Subtest: closed by default; grants exposed only after write; publish requires external; document holds no secret
+ok 10 - closed by default; grants exposed only after write; publish requires external; document holds no secret
+  ---
+  duration_ms: 4.002415
+  type: 'test'
+  ...
+# Subtest: withdrawal is immediate, cascades publish, and reports honestly when the disk fails
+ok 11 - withdrawal is immediate, cascades publish, and reports honestly when the disk fails
+  ---
+  duration_ms: 1.686717
+  type: 'test'
+  ...
+# Subtest: account bound: other account sees nothing, unknown account cannot grant, regrant rebinds
+ok 12 - account bound: other account sees nothing, unknown account cannot grant, regrant rebinds
+  ---
+  duration_ms: 0.509988
+  type: 'test'
+  ...
+# Subtest: automation replace preserves manual consent; manual write preserves automation; stale read cannot regress
+ok 13 - automation replace preserves manual consent; manual write preserves automation; stale read cannot regress
+  ---
+  duration_ms: 0.749934
+  type: 'test'
+  ...
+# Subtest: obsolete grant resolving after a newer withdrawal does not re-grant; stop closes everything
+ok 14 - obsolete grant resolving after a newer withdrawal does not re-grant; stop closes everything
+  ---
+  duration_ms: 0.581366
+  type: 'test'
+  ...
+# Subtest: read failure fails closed with a visible problem; a later explicit grant recovers; malformed records normalized
+ok 15 - read failure fails closed with a visible problem; a later explicit grant recovers; malformed records normalized
+  ---
+  duration_ms: 0.466061
+  type: 'test'
+  ...
+# Subtest: URL signée conservée, domaines/chemins/ports/userinfo étrangers rejetés
+ok 16 - URL signée conservée, domaines/chemins/ports/userinfo étrangers rejetés
+  ---
+  duration_ms: 2.81243
+  type: 'test'
+  ...
+# Subtest: extraction vocale bornée ; messages ordinaires ignorés
+ok 17 - extraction vocale bornée ; messages ordinaires ignorés
+  ---
+  duration_ms: 1.532804
+  type: 'test'
+  ...
+# Subtest: guard exact version / canary / codes observés, sans conversion numérique
+ok 18 - guard exact version / canary / codes observés, sans conversion numérique
+  ---
+  duration_ms: 0.26703
+  type: 'test'
+  ...
+# Subtest: aucun download sans confirmation ou clé valide
+ok 19 - aucun download sans confirmation ou clé valide
+  ---
+  duration_ms: 0.848288
+  type: 'test'
+  ...
+# Subtest: chaîne réelle orchestrée via fixtures, phases, déduplication et cache mémoire
+ok 20 - chaîne réelle orchestrée via fixtures, phases, déduplication et cache mémoire
+  ---
+  duration_ms: 1.487393
+  type: 'test'
+  ...
+# Subtest: purge au démarrage avant action, préparation en erreur récupérable
+ok 21 - purge au démarrage avant action, préparation en erreur récupérable
+  ---
+  duration_ms: 0.330965
+  type: 'test'
+  ...
+# Subtest: échec ambigu après upload : cleanup, aucun retry automatique, tentative marquée
+ok 22 - échec ambigu après upload : cleanup, aucun retry automatique, tentative marquée
+  ---
+  duration_ms: 0.599234
+  type: 'test'
+  ...
+# Subtest: redirection hors CDN, réponse non audio et fichier tronqué empêchent upload
+ok 23 - redirection hors CDN, réponse non audio et fichier tronqué empêchent upload
+  ---
+  duration_ms: 0.762528
+  type: 'test'
+  ...
+# Subtest: échec écriture partielle nettoyé ; URI incorrecte interdit upload
+ok 24 - échec écriture partielle nettoyé ; URI incorrecte interdit upload
+  ---
+  duration_ms: 1.001982
+  type: 'test'
+  ...
+# Subtest: échec nettoyage VERROUILLE les transferts puis stop retente suppression
+ok 25 - échec nettoyage VERROUILLE les transferts puis stop retente suppression
+  ---
+  duration_ms: 2.224902
+  type: 'test'
+  ...
+# Subtest: annulation pendant download : aucun upload, promesse rejetée
+ok 26 - annulation pendant download : aucun upload, promesse rejetée
+  ---
+  duration_ms: 12.295451
+  type: 'test'
+  ...
+# Subtest: annulation pendant cleanup ne publie pas un résultat tardif
+ok 27 - annulation pendant cleanup ne publie pas un résultat tardif
+  ---
+  duration_ms: 0.888158
+  type: 'test'
+  ...
+# Subtest: stop pendant upload annule, nettoie et refuse nouvelles actions
+ok 28 - stop pendant upload annule, nettoie et refuse nouvelles actions
+  ---
+  duration_ms: 2.550676
+  type: 'test'
+  ...
+# Subtest: un seul vocal actif : pas de concurrence cachée
+ok 29 - un seul vocal actif : pas de concurrence cachée
+  ---
+  duration_ms: 0.550713
+  type: 'test'
+  ...
+# Subtest: base64 exact, y compris frontières des chunks
+ok 30 - base64 exact, y compris frontières des chunks
+  ---
+  duration_ms: 18.512745
+  type: 'test'
+  ...
+# Subtest: erreurs inconnues ne divulguent pas de détail
+ok 31 - erreurs inconnues ne divulguent pas de détail
+  ---
+  duration_ms: 0.218077
+  type: 'test'
+  ...
+# Subtest: arbre menu : unicité, cycles, profondeur et budget
+ok 32 - arbre menu : unicité, cycles, profondeur et budget
+  ---
+  duration_ms: 0.440906
+  type: 'test'
+  ...
+# Subtest: serialized init/save/replace/delete; restart uses same vault, never stale init
+ok 33 - serialized init/save/replace/delete; restart uses same vault, never stale init
+  ---
+  duration_ms: 3.85123
+  type: 'test'
+  ...
+# Subtest: background zeroes JS but restores from vault without re-entry
+ok 34 - background zeroes JS but restores from vault without re-entry
+  ---
+  duration_ms: 0.371754
+  type: 'test'
+  ...
+# Subtest: native failures fail closed; later operation recovers; no false saved state
+ok 35 - native failures fail closed; later operation recovers; no false saved state
+  ---
+  duration_ms: 0.688566
+  type: 'test'
+  ...
+# Subtest: stop during load/save prevents late key resurrection; rejects queued writes
+ok 36 - stop during load/save prevents late key resurrection; rejects queued writes
+  ---
+  duration_ms: 0.878767
+  type: 'test'
+  ...
+# Subtest: delete/save preserves order despite failing delete; malformed loaded key refused
+ok 37 - delete/save preserves order despite failing delete; malformed loaded key refused
+  ---
+  duration_ms: 0.496304
+  type: 'test'
+  ...
+# Subtest: concurrent initializations and replacement never overlap native operations
+ok 38 - concurrent initializations and replacement never overlap native operations
+  ---
+  duration_ms: 0.866934
+  type: 'test'
+  ...
+# Subtest: suspend during native save cannot resurrect memory; foreground reloads committed value
+ok 39 - suspend during native save cannot resurrect memory; foreground reloads committed value
+  ---
+  duration_ms: 0.489804
+  type: 'test'
+  ...
+# Subtest: delete failure is explicit, clears memory, and does not pretend disk was erased
+ok 40 - delete failure is explicit, clears memory, and does not pretend disk was erased
+  ---
+  duration_ms: 0.408825
+  type: 'test'
+  ...
+# Subtest: delete revokes immediately and late init never resurfaces the deleted key
+ok 41 - delete revokes immediately and late init never resurfaces the deleted key
+  ---
+  duration_ms: 2.097849
+  type: 'test'
+  ...
+# Subtest: insertion planned only for the unique eligible native group; refusals are explicit
+ok 42 - insertion planned only for the unique eligible native group; refusals are explicit
+  ---
+  duration_ms: 2.389638
+  type: 'test'
+  ...
+# Subtest: eligibility: native rows only, no danger, an action, icon support via rows or hasIcons
+ok 43 - eligibility: native rows only, no danger, an action, icon support via rows or hasIcons
+  ---
+  duration_ms: 1.276534
+  type: 'test'
+  ...
+# Subtest: visibility: traversal through host containers only, never into groups or composite renders
+ok 44 - visibility: traversal through host containers only, never into groups or composite renders
+  ---
+  duration_ms: 0.417793
+  type: 'test'
+  ...
+# Subtest: bounded traversal: excessive depth or width refuses; cycles terminate without refusing the rest
+ok 45 - bounded traversal: excessive depth or width refuses; cycles terminate without refusing the rest
+  ---
+  duration_ms: 0.421771
+  type: 'test'
+  ...
+# Subtest: flattenChildren mirrors React child flattening
+ok 46 - flattenChildren mirrors React child flattening
+  ---
+  duration_ms: 0.272286
+  type: 'test'
+  ...
+# Subtest: download GET uniquement CDN, pas de clé/token/cookie, arraybuffer et timeout
+ok 47 - download GET uniquement CDN, pas de clé/token/cookie, arraybuffer et timeout
+  ---
+  duration_ms: 2.61649
+  type: 'test'
+  ...
+# Subtest: upload réel construit multipart RN, endpoint et options STT exacts
+ok 48 - upload réel construit multipart RN, endpoint et options STT exacts
+  ---
+  duration_ms: 0.547647
+  type: 'test'
+  ...
+# Subtest: 401/403/402/413/422/429/500 sont des erreurs sûres, aucun retry
+ok 49 - 401/403/402/413/422/429/500 sont des erreurs sûres, aucun retry
+  ---
+  duration_ms: 1.985646
+  type: 'test'
+  ...
+# Subtest: Content-Length et progression excessive provoquent abort
+ok 50 - Content-Length et progression excessive provoquent abort
+  ---
+  duration_ms: 0.888373
+  type: 'test'
+  ...
+# Subtest: contrôle final limite même sans header/progression
+ok 51 - contrôle final limite même sans header/progression
+  ---
+  duration_ms: 0.345491
+  type: 'test'
+  ...
+# Subtest: URL initiale étrangère rejetée avant création XHR
+ok 52 - URL initiale étrangère rejetée avant création XHR
+  ---
+  duration_ms: 0.226495
+  type: 'test'
+  ...
+# Subtest: redirections détectées et résultat refusé (pas preuve blocage natif préalable)
+ok 53 - redirections détectées et résultat refusé (pas preuve blocage natif préalable)
+  ---
+  duration_ms: 0.419689
+  type: 'test'
+  ...
+# Subtest: réponses JSON invalides, vides ou trop longues refusées
+ok 54 - réponses JSON invalides, vides ou trop longues refusées
+  ---
+  duration_ms: 1.576002
+  type: 'test'
+  ...
+# Subtest: erreur réseau et timeout : pas de retry, handlers détachés
+ok 55 - erreur réseau et timeout : pas de retry, handlers détachés
+  ---
+  duration_ms: 0.482275
+  type: 'test'
+  ...
+# Subtest: annulation avant requête et pendant transfert
+ok 56 - annulation avant requête et pendant transfert
+  ---
+  duration_ms: 0.580219
+  type: 'test'
+  ...
+1..56
+# tests 56
+# suites 0
+# pass 56
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 193.92364
+
+> valenced-elevenlabs-transcription@0.2.0-dev build:cli
+> tsc -p vendor/cli/tsconfig.json
+
+
+> valenced-elevenlabs-transcription@0.2.0-dev bundle
+> node vendor/cli/dist/main.js build elevenlabs-transcription
+
+✓ Built JS for anezium.elevenlabs-transcription
+
+> valenced-elevenlabs-transcription@0.2.0-dev test:lifecycle
+> node --test tests/lifecycle.test.mjs tests/client.test.mjs tests/ui.test.mjs tests/consent-revocation.test.mjs tests/consent-write-race.test.mjs tests/auto-boundaries.test.mjs
+
+TAP version 13
+# Subtest: deferred pre-boundary voice events cannot cross foreground, channel or reconnect barriers
+ok 1 - deferred pre-boundary voice events cannot cross foreground, channel or reconnect barriers
+  ---
+  duration_ms: 30.757203
+  type: 'test'
+  ...
+# Subtest: events observed while disabled cannot gain consent during deferred dispatch
+ok 2 - events observed while disabled cannot gain consent during deferred dispatch
+  ---
+  duration_ms: 3.595304
+  type: 'test'
+  ...
+# Subtest: channel isolation: no local bleed and own replies always reference their original channel
+ok 3 - channel isolation: no local bleed and own replies always reference their original channel
+  ---
+  duration_ms: 5.890621
+  type: 'test'
+  ...
+# Subtest: actual bundle: default opt-out, explicit persisted consent then incoming inline row only
+ok 4 - actual bundle: default opt-out, explicit persisted consent then incoming inline row only
+  ---
+  duration_ms: 17.225522
+  type: 'test'
+  ...
+# Subtest: actual bundle: own SENDING/read ACK ignored; SENT create/server success posts genuine referenced HTTP body once
+ok 5 - actual bundle: own SENDING/read ACK ignored; SENT create/server success posts genuine referenced HTTP body once
+  ---
+  duration_ms: 11.639368
+  type: 'test'
+  ...
+# Subtest: actual bundle: autrui is never public, optimistic/edit/history/bot/ephemeral events skipped
+ok 6 - actual bundle: autrui is never public, optimistic/edit/history/bot/ephemeral events skipped
+  ---
+  duration_ms: 3.902305
+  type: 'test'
+  ...
+# Subtest: actual bundle: prefs restored on restart, scoped to account, no duplicate replay after reconnect
+ok 7 - actual bundle: prefs restored on restart, scoped to account, no duplicate replay after reconnect
+  ---
+  duration_ms: 4.72758
+  type: 'test'
+  ...
+# Subtest: actual bundle: permission failure prevents cost; HTTP failure no retry and durable reservation survives same-id event
+ok 8 - actual bundle: permission failure prevents cost; HTTP failure no retry and durable reservation survives same-id event
+  ---
+  duration_ms: 4.267852
+  type: 'test'
+  ...
+# Subtest: actual bundle: missing or ambiguous host capabilities refuse enabling; disabling persists despite loss
+ok 9 - actual bundle: missing or ambiguous host capabilities refuse enabling; disabling persists despite loss
+  ---
+  duration_ms: 8.130693
+  type: 'test'
+  ...
+# Subtest: actual bundle: background/key delete/disable cancel active STT and remove inline text, no late public reply
+ok 10 - actual bundle: background/key delete/disable cancel active STT and remove inline text, no late public reply
+  ---
+  duration_ms: 17.350913
+  type: 'test'
+  ...
+# Subtest: actual bundle: failed preference write never activates cost or posting; malformed prefs stay off
+ok 11 - actual bundle: failed preference write never activates cost or posting; malformed prefs stay off
+  ---
+  duration_ms: 2.46248
+  type: 'test'
+  ...
+# Subtest: actual bundle: rendered settings switches persist separate initial cost/publication controls, never a key nor implied manual consent
+ok 12 - actual bundle: rendered settings switches persist separate initial cost/publication controls, never a key nor implied manual consent
+  ---
+  duration_ms: 3.791139
+  type: 'test'
+  ...
+# Subtest: actual bundle: manual recovery requires explicit publish consent and own cached vocal
+ok 13 - actual bundle: manual recovery requires explicit publish consent and own cached vocal
+  ---
+  duration_ms: 2.261912
+  type: 'test'
+  ...
+# Subtest: actual bundle: queued enable then disable cannot briefly resume after obsolete disk write
+ok 14 - actual bundle: queued enable then disable cannot briefly resume after obsolete disk write
+  ---
+  duration_ms: 3.079038
+  type: 'test'
+  ...
+# Subtest: actual bundle: incompatible row fails closed and unrelated row identity is never annotated
+ok 15 - actual bundle: incompatible row fails closed and unrelated row identity is never annotated
+  ---
+  duration_ms: 1.870315
+  type: 'test'
+  ...
+# Subtest: actual bundle: duplicate row module clears local refreshes before unpatch and suspends automation
+ok 16 - actual bundle: duplicate row module clears local refreshes before unpatch and suspends automation
+  ---
+  duration_ms: 1.936569
+  type: 'test'
+  ...
+# Subtest: actual bundle: queued voices stay bounded and rate limited through the concrete adapter
+ok 17 - actual bundle: queued voices stay bounded and rate limited through the concrete adapter
+  ---
+  duration_ms: 4.889972
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke all, pending, every resume path remains revoked
+ok 18 - bundle consent: revoke all, pending, every resume path remains revoked
+  ---
+  duration_ms: 40.692192
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke all, failure, every resume path remains revoked
+ok 19 - bundle consent: revoke all, failure, every resume path remains revoked
+  ---
+  duration_ms: 32.680931
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke incoming, pending, every resume path remains revoked
+ok 20 - bundle consent: revoke incoming, pending, every resume path remains revoked
+  ---
+  duration_ms: 38.387944
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke incoming, failure, every resume path remains revoked
+ok 21 - bundle consent: revoke incoming, failure, every resume path remains revoked
+  ---
+  duration_ms: 20.511939
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke own, pending, every resume path remains revoked
+ok 22 - bundle consent: revoke own, pending, every resume path remains revoked
+  ---
+  duration_ms: 13.173544
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke own, failure, every resume path remains revoked
+ok 23 - bundle consent: revoke own, failure, every resume path remains revoked
+  ---
+  duration_ms: 12.23661
+  type: 'test'
+  ...
+# Subtest: bundle consent: failed revoke then failed enable stays off; only successful explicit enable restores
+ok 24 - bundle consent: failed revoke then failed enable stays off; only successful explicit enable restores
+  ---
+  duration_ms: 3.221411
+  type: 'test'
+  ...
+# Subtest: bundle consent: revoke cancels active work and queued obsolete enable cannot restore it
+ok 25 - bundle consent: revoke cancels active work and queued obsolete enable cannot restore it
+  ---
+  duration_ms: 3.553924
+  type: 'test'
+  ...
+# Subtest: bundle consent: configure snapshots caller input; mutable object cannot grant consent
+ok 26 - bundle consent: configure snapshots caller input; mutable object cannot grant consent
+  ---
+  duration_ms: 2.23937
+  type: 'test'
+  ...
+# Subtest: bundle consent: older successful write cannot restore consent while newer revoke fails
+ok 27 - bundle consent: older successful write cannot restore consent while newer revoke fails
+  ---
+  duration_ms: 15.898693
+  type: 'test'
+  ...
+# Subtest: bundle start/menu manuel : aucun transfert avant action et confirmation
+ok 28 - bundle start/menu manuel : aucun transfert avant action et confirmation
+  ---
+  duration_ms: 17.544615
+  type: 'test'
+  ...
+# Subtest: diagnostic clé : settings et action manuelle partagent exactement le même runtime
+ok 29 - diagnostic clé : settings et action manuelle partagent exactement le même runtime
+  ---
+  duration_ms: 8.228835
+  type: 'test'
+  ...
+# Subtest: diagnostic init : clé saisie avant purge conservée après résolution concurrente
+ok 30 - diagnostic init : clé saisie avant purge conservée après résolution concurrente
+  ---
+  duration_ms: 2.328014
+  type: 'test'
+  ...
+# Subtest: correction lifecycle : inactive/background efface mémoire puis restaure via coffre
+ok 31 - correction lifecycle : inactive/background efface mémoire puis restaure via coffre
+  ---
+  duration_ms: 3.366264
+  type: 'test'
+  ...
+# Subtest: correction restart : stop/start restaure le coffre, ancien runtime refuse la clé
+ok 32 - correction restart : stop/start restaure le coffre, ancien runtime refuse la clé
+  ---
+  duration_ms: 2.486262
+  type: 'test'
+  ...
+# Subtest: bundle refuse client différent ou primitives manquantes sans patch/réseau
+ok 33 - bundle refuse client différent ou primitives manquantes sans patch/réseau
+  ---
+  duration_ms: 2.599258
+  type: 'test'
+  ...
+# Subtest: bundle dépatch quand découverte ambiguë ; callbacks tardifs ignorés
+ok 34 - bundle dépatch quand découverte ambiguë ; callbacks tardifs ignorés
+  ---
+  duration_ms: 3.096609
+  type: 'test'
+  ...
+# Subtest: bundle ignore texte ordinaire et arbre inattendu, sans crash
+ok 35 - bundle ignore texte ordinaire et arbre inattendu, sans crash
+  ---
+  duration_ms: 2.572972
+  type: 'test'
+  ...
+# Subtest: bundle cache non purgeable désactive transfert, puis reload propre
+ok 36 - bundle cache non purgeable désactive transfert, puis reload propre
+  ---
+  duration_ms: 3.372563
+  type: 'test'
+  ...
+# Subtest: bundle coffre absent : échec sans faux état enregistré et sans trafic
+ok 37 - bundle coffre absent : échec sans faux état enregistré et sans trafic
+  ---
+  duration_ms: 2.061177
+  type: 'test'
+  ...
+# Subtest: bundle suppression et remplacement partagés settings/menu sans réactivation erronée
+ok 38 - bundle suppression et remplacement partagés settings/menu sans réactivation erronée
+  ---
+  duration_ms: 2.531679
+  type: 'test'
+  ...
+# Subtest: menu synthétique : insertion en tête de l’unique groupe natif éligible, icône résolue par le host, aucun groupe ajouté
+ok 39 - menu synthétique : insertion en tête de l’unique groupe natif éligible, icône résolue par le host, aucun groupe ajouté
+  ---
+  duration_ms: 2.169035
+  type: 'test'
+  ...
+# Subtest: menu synthétique : refus explicite (vide, danger seul, ambigu, fragment, feuilles multiples, icône introuvable), jamais de groupe spéculatif
+ok 40 - menu synthétique : refus explicite (vide, danger seul, ambigu, fragment, feuilles multiples, icône introuvable), jamais de groupe spéculatif
+  ---
+  duration_ms: 8.62405
+  type: 'test'
+  ...
+# Subtest: menu synthétique : repli sur l’identifiant d’asset host quand le composant icône est absent ; la ligne ouvre bien la feuille
+ok 41 - menu synthétique : repli sur l’identifiant d’asset host quand le composant icône est absent ; la ligne ouvre bien la feuille
+  ---
+  duration_ms: 1.262723
+  type: 'test'
+  ...
+# Subtest: parent regression: manual revoke cancels in-flight work immediately even if persistence fails, and suppresses late result
+ok 42 - parent regression: manual revoke cancels in-flight work immediately even if persistence fails, and suppresses late result
+  ---
+  duration_ms: 18.565199
+  type: 'test'
+  ...
+# Subtest: parent regression: failed native deletion leaves a visible retry action without key in memory
+ok 43 - parent regression: failed native deletion leaves a visible retry action without key in memory
+  ---
+  duration_ms: 8.314691
+  type: 'test'
+  ...
+# Subtest: ui settings: concise native groups, manual consents off by default, persisted per account without secrets, publish gated by external, revoke immediate
+ok 44 - ui settings: concise native groups, manual consents off by default, persisted per account without secrets, publish gated by external, revoke immediate
+  ---
+  duration_ms: 3.881139
+  type: 'test'
+  ...
+# Subtest: ui settings: account switch hides consent; failed grant stays off; failed revoke is honest and session-only; restart restores persisted consent
+ok 45 - ui settings: account switch hides consent; failed grant stays off; failed revoke is honest and session-only; restart restores persisted consent
+  ---
+  duration_ms: 4.354954
+  type: 'test'
+  ...
+# Subtest: ui settings: automatic switches never imply manual consent; manual record survives automation whole-document writes
+ok 46 - ui settings: automatic switches never imply manual consent; manual record survives automation whole-document writes
+  ---
+  duration_ms: 7.366833
+  type: 'test'
+  ...
+# Subtest: ui settings: key rows use the runtime facades; danger delete; editor row toggles; details row shows placement
+ok 47 - ui settings: key rows use the runtime facades; danger delete; editor row toggles; details row shows placement
+  ---
+  duration_ms: 2.300376
+  type: 'test'
+  ...
+# Subtest: ui sheet: one-time consent then a single confirmed transcribe action; no transfer control without consent; revocation removes it
+ok 48 - ui sheet: one-time consent then a single confirmed transcribe action; no transfer control without consent; revocation removes it
+  ---
+  duration_ms: 3.642075
+  type: 'test'
+  ...
+# Subtest: ui sheet: publish needs explicit one-time publish consent and own cached vocal; never for others; key editor only without key
+ok 49 - ui sheet: publish needs explicit one-time publish consent and own cached vocal; never for others; key editor only without key
+  ---
+  duration_ms: 5.706511
+  type: 'test'
+  ...
+1..49
+# tests 49
+# suites 0
+# pass 49
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 286.910308
+
+> valenced-elevenlabs-transcription@0.2.0-dev build:native
+> python3 scripts/build-native.py
+
+Xposed upstream publishes no checksum sidecar; HTTPS source + recorded SHA256: f48c635f1c7469fdec0e00ad2ea0b7a6b2f5b55065784a35b7ca3a84615e8e25
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.kotlin.org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::invokeCleaner has been called by org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Please consider reporting this to the maintainers of class org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt
+WARNING: sun.misc.Unsafe::invokeCleaner will be removed in a future release
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.kotlin.org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::invokeCleaner has been called by org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Please consider reporting this to the maintainers of class org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt
+WARNING: sun.misc.Unsafe::invokeCleaner will be removed in a future release
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.jetbrains.kotlin.org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::invokeCleaner has been called by org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt (file:<workspace>/build/native/kotlin-compiler-embeddable-2.4.10.jar)
+WARNING: Please consider reporting this to the maintainers of class org.jetbrains.kotlin.cli.jvm.compiler.jarfs.FastJarFileSystemKt
+WARNING: sun.misc.Unsafe::invokeCleaner will be removed in a future release
+Native JVM crypto, host builder and async bridge lifecycle: 41 assertions PASS. AndroidKeyStore NOT executed.
+Real host source compilation + plugin JVM + D8 DEX: PASS
+
+> valenced-elevenlabs-transcription@0.2.0-dev package
+> node scripts/package-dev.mjs
+
+Local DEV ZIP verified: anezium.elevenlabs-transcription@0.2.0-dev.zip; 48205 bytes; SHA256 3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f; 12 DEX definitions (plugin + D8 annotation only). Public index unchanged.

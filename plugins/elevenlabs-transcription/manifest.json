@@ -2,12 +2,12 @@
   "format": 1,
   "id": "anezium.elevenlabs-transcription",
   "name": "Transcription ElevenLabs (expérimental)",
-  "description": "Transcription manuelle des vocaux existants. Confirmation avant transfert, clé en mémoire uniquement, résultat local. Aucun envoi Discord.",
+  "description": "Candidat local : coffre Android Keystore, UI Fable et transcription opt-in ; autrui local, vos vocaux en réponse après envoi. Runtime Android non validé, publication soumise à revue.",
   "author": "Anezium / Forge",
-  "version": "0.1.0",
+  "version": "0.2.0-dev",
   "dependencies": {
     "valenced.api": {"version": "=1.0.0"},
     "discord": {"version": "=352.6"}
   },
-  "dist": {"script": "index.js"}
+  "dist": {"script": "index.js", "android": {"path": "elevenlabs.jar", "class": "app.anezium.elevenlabs.ElevenLabsPlugin"}}
 }

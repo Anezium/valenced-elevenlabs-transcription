@@ -1,0 +1,30 @@
+{
+  "provenance_ok": true,
+  "changed_files": [
+    "plugins/elevenlabs-transcription/js/consent.ts",
+    "plugins/elevenlabs-transcription/js/index.tsx",
+    "plugins/elevenlabs-transcription/js/menu.ts",
+    "tests/client-host.mjs",
+    "tests/client.test.mjs",
+    "tests/consent.test.ts",
+    "tests/lifecycle.test.mjs",
+    "tests/menu.test.ts",
+    "tests/ui.test.mjs"
+  ],
+  "modelUsage": {
+    "claude-fable-5-1": {
+      "inputTokens": 418,
+      "outputTokens": 147434,
+      "cacheReadInputTokens": 1709436,
+      "cacheCreationInputTokens": 294544,
+      "webSearchRequests": 0,
+      "costUSD": 13.694119,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 84572,
+      "canonicalModel": "claude-fable-5-1",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  }
+}

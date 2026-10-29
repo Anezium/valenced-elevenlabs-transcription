@@ -1,0 +1,59 @@
+{
+  "version": "0.2.0-dev",
+  "sha256": "3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f",
+  "bytes": 48205,
+  "host_commit": "d3e17fe0416c3dc5f4b4d783b465eeb4a99caec1",
+  "offline_checks": [
+    {
+      "command": "npm run verify",
+      "exit_code": 0,
+      "log": "check-0.log"
+    },
+    {
+      "command": "node --test build/qa-t_4b5dcac9/stateful-ui.test.mjs",
+      "exit_code": 0,
+      "log": "check-1.log"
+    },
+    {
+      "command": "node scripts/audit-dev.mjs",
+      "exit_code": 0,
+      "log": "check-2.log"
+    },
+    {
+      "command": "python3 ui-pass/verify-provenance.py",
+      "exit_code": 0,
+      "log": "check-3.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "log": "check-4.log"
+    }
+  ],
+  "typescript_tests": 56,
+  "bundle_tests": 49,
+  "extra_synthetic_ui_probes": 2,
+  "jvm_assertions": 41,
+  "real_host_version_assertions": 6,
+  "source_files_equal_reviewed_archive": 176,
+  "native_dex_packaged": true,
+  "index_generated_by_official_cli": true,
+  "index_dependencies_equal_manifest": true,
+  "channels": {
+    "latest": "0.2.0-dev",
+    "beta": "0.2.0-dev",
+    "testing": "0.2.0-dev",
+    "legacy": "0.1.0"
+  },
+  "android_runtime_verified": false,
+  "phone_installed": false,
+  "live_stt": false,
+  "real_discord_reply": false,
+  "model": {
+    "generative_model": "claude-fable-5-1",
+    "effort": "high",
+    "run_ended_http": 429,
+    "new_inference_this_publication": false
+  },
+  "scan_limit": "Pattern scan only; no proof of absence of all secrets"
+}

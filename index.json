@@ -1,20 +1,36 @@
 {
   "format": 1,
   "name": "Anezium — Transcription ElevenLabs (expérimental)",
-  "description": "Test JS-only pour Discord 352.6 canary. Clé en mémoire, accord manuel, traitement externe potentiellement payant. Runtime téléphone et API réelle non testés.",
+  "description": "Préversion de test 0.2.0-dev : coffre Android et automatisation opt-in. Android et API réelle non validés ; coûts possibles.",
   "plugins": {
     "anezium.elevenlabs-transcription": {
       "name": "Transcription ElevenLabs (expérimental)",
-      "description": "Transcription manuelle des vocaux existants. Confirmation avant transfert, clé en mémoire uniquement, résultat local. Aucun envoi Discord.",
+      "description": "Candidat local : coffre Android Keystore, UI Fable et transcription opt-in ; autrui local, vos vocaux en réponse après envoi. Runtime Android non validé, publication soumise à revue.",
       "author": "Anezium / Forge",
       "channels": {
-        "latest": "0.1.0"
+        "latest": "0.2.0-dev",
+        "beta": "0.2.0-dev",
+        "testing": "0.2.0-dev",
+        "legacy": "0.1.0"
       },
       "versions": {
         "0.1.0": {
           "url": "https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.1.0/anezium.elevenlabs-transcription@0.1.0.zip",
           "sha256": "55aedbfe9480de98f576440c79fc8643c4258b4fb7141c63e7caebb16b3d9dcc",
           "size": 27285,
+          "dependencies": {
+            "valenced.api": {
+              "version": "=1.0.0"
+            },
+            "discord": {
+              "version": "=352.6"
+            }
+          }
+        },
+        "0.2.0-dev": {
+          "url": "https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.0-dev/anezium.elevenlabs-transcription@0.2.0-dev.zip",
+          "sha256": "3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f",
+          "size": 48205,
           "dependencies": {
             "valenced.api": {
               "version": "=1.0.0"

@@ -1,4 +1,11 @@
 {
   "name": "Anezium — Transcription ElevenLabs (expérimental)",
-  "description": "Test JS-only pour Discord 352.6 canary. Clé en mémoire, accord manuel, traitement externe potentiellement payant. Runtime téléphone et API réelle non testés."
+  "description": "Préversion de test 0.2.0-dev : coffre Android et automatisation opt-in. Android et API réelle non validés ; coûts possibles.",
+  "channels": {
+    "anezium.elevenlabs-transcription": {
+      "latest": "0.2.0-dev",
+      "testing": "0.2.0-dev",
+      "legacy": "0.1.0"
+    }
+  }
 }

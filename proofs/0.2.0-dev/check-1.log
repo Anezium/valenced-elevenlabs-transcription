@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: QA synthetic stateful render: inline download/upload, cancel, failure/retry, result and clipboard failure
+ok 1 - QA synthetic stateful render: inline download/upload, cancel, failure/retry, result and clipboard failure
+  ---
+  duration_ms: 13.463346
+  type: 'test'
+  ...
+# Subtest: QA synthetic stateful render: masked replace editor calls shared runtime and hides after success; failure stays inline
+ok 2 - QA synthetic stateful render: masked replace editor calls shared runtime and hides after success; failure stays inline
+  ---
+  duration_ms: 9.120034
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.77469

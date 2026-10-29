@@ -1,4 +1,14 @@
-Transcription ElevenLabs pour Valenced — 0.1.0 expérimentale
+Transcription ElevenLabs pour Valenced — 0.2.0-dev locale, non publiée
+
+L'adaptateur client v0.2 reprend les contrats de rendu RowManager et de
+rafraîchissement MESSAGE_UPDATE des exemples message-logger/js/rows.ts et
+message-link-preview/js/updates.ts ; accès HTTP/Endpoints inspiré de
+message-link-preview/js/fetch.ts. Révision communautaire :
+c398e3115f8a6ec5e1f5fa2dac9069c4b98b210c, GPL-3.0, contributeurs Valenced.
+Adaptations Forge/Anezium : accords persistants, bornes, refus en cas
+ d'ambiguïté, association canal/message et nettoyage du rendu local.
+Les sources de cette préversion sont fournies dans l'archive locale
+valenced-v020-technical-review-source.zip, pas dans le tag public v0.1.0.
 
 Copyright 2026 Anezium. GPL-3.0-only, sans garantie ; voir LICENSE.
 L'intégration du menu est adaptée des exemples Valenced communautaires

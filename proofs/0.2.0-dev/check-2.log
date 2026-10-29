@@ -1,0 +1,8 @@
+{
+  "sourceFilesScanned": 35,
+  "vendorFilesVerified": 143,
+  "publicIndexUnchanged": true,
+  "sha256": "3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f",
+  "zipSize": 48205,
+  "checks": "Pattern scan; no runtime fixtures/logging/direct account-token access; JSON preferences contain only consent booleans and account binding (integration tests); native encrypted key; referenced reply and nonce guards present. Not a proof of absence of all secrets."
+}
