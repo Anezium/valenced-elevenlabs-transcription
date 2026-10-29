@@ -1,35 +1,35 @@
-Transcription ElevenLabs pour Valenced — 0.2.0-dev locale, non publiée
+ElevenLabs Transcription for Valenced — 0.2.1
 
-L'adaptateur client v0.2 reprend les contrats de rendu RowManager et de
-rafraîchissement MESSAGE_UPDATE des exemples message-logger/js/rows.ts et
-message-link-preview/js/updates.ts ; accès HTTP/Endpoints inspiré de
-message-link-preview/js/fetch.ts. Révision communautaire :
-c398e3115f8a6ec5e1f5fa2dac9069c4b98b210c, GPL-3.0, contributeurs Valenced.
-Adaptations Forge/Anezium : accords persistants, bornes, refus en cas
- d'ambiguïté, association canal/message et nettoyage du rendu local.
-Les sources de cette préversion sont fournies dans l'archive locale
-valenced-v020-technical-review-source.zip, pas dans le tag public v0.1.0.
+The v0.2 client adapter reuses the RowManager rendering and MESSAGE_UPDATE
+refresh contracts from the examples message-logger/js/rows.ts and
+message-link-preview/js/updates.ts; HTTP/Endpoints access inspired by
+message-link-preview/js/fetch.ts. Community revision:
+c398e3115f8a6ec5e1f5fa2dac9069c4b98b210c, GPL-3.0, Valenced contributors.
+Forge/Anezium adaptations: persistent consents, bounds, refusal on
+ambiguity, channel/message association and cleanup of the local rendering.
+The sources of this preview are provided in the local archive
+valenced-v020-technical-review-source.zip, not in the public v0.1.0 tag.
 
-Copyright 2026 Anezium. GPL-3.0-only, sans garantie ; voir LICENSE.
-L'intégration du menu est adaptée des exemples Valenced communautaires
+Copyright 2026 Anezium. GPL-3.0-only, without warranty; see LICENSE.
+The menu integration is adapted from the Valenced community examples
 (message-logger/js/actionsheet.tsx, c398e3115f8a6ec5e1f5fa2dac9069c4b98b210c),
-réécrite avec garde de compatibilité, recherche bornée et clonage des éléments.
+rewritten with a compatibility guard, bounded search and element cloning.
 https://github.com/Valenced/valenced-community-plugins
 
-Outils et types redistribués non modifiés, licences préservées :
+Tools and types redistributed unmodified, licenses preserved:
 - Valenced/valenced-plugin-cli c8854005208fa29c0f56eac265fd596320a48713
-  vendor/cli — GPL-3.0 ; https://github.com/Valenced/valenced-plugin-cli
+  vendor/cli — GPL-3.0; https://github.com/Valenced/valenced-plugin-cli
 - Valenced/valenced-types 8c63656dcde4c22a61868896115e10d13c1ebc55
-  vendor/types — GPL-3.0 ; https://github.com/Valenced/valenced-types
-Types générés contre Valenced/valenced 706dae437058922a10246a1df0a614328db79a5c.
-Bundle/core/API identiques à d3e17fe0416c3dc5f4b4d783b465eeb4a99caec1.
+  vendor/types — GPL-3.0; https://github.com/Valenced/valenced-types
+Types generated against Valenced/valenced 706dae437058922a10246a1df0a614328db79a5c.
+Bundle/core/API identical to d3e17fe0416c3dc5f4b4d783b465eeb4a99caec1.
 
-Le ZIP n'inclut ni React, ni React Native, ni Valenced : ce sont les API de
-l'hôte, externes au bundle. Les helpers SWC générés dérivent de @swc/helpers
-(licence Apache-2.0). Copyright (c) 2017-2026 SWC contributors.
-Licence : https://www.apache.org/licenses/LICENSE-2.0
-Copie incluse dans le dépôt : licenses/Apache-2.0.txt.
+The ZIP includes neither React, nor React Native, nor Valenced: these are the
+host's APIs, external to the bundle. The generated SWC helpers derive from
+@swc/helpers (Apache-2.0 license). Copyright (c) 2017-2026 SWC contributors.
+License: https://www.apache.org/licenses/LICENSE-2.0
+Copy included in the repository: licenses/Apache-2.0.txt.
 
-Source et instructions de compilation, au même endroit que les binaires :
+Source and build instructions, in the same place as the binaries:
 https://github.com/Anezium/valenced-elevenlabs-transcription/tree/v0.1.0
-Aucune affiliation officielle avec Discord, Valenced ou ElevenLabs.
+No official affiliation with Discord, Valenced or ElevenLabs.

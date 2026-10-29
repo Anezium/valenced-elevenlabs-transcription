@@ -26,7 +26,7 @@ import type { ManualConsentRecord, ManualKind } from './consent.js';
 import { REFUSAL_MESSAGES, flattenChildren, planInsertion } from './menu.js';
 
 const SHEET_KEY = 'anezium-elevenlabs-transcription';
-const ACTION_LABEL = 'Transcrire avec ElevenLabs';
+const ACTION_LABEL = 'Transcribe with ElevenLabs';
 // Nom d’asset que le host Valenced d3e17fe utilise lui-même (HermesVersionSetting). Sa présence dans le
 // client 352.6 installé reste à vérifier sur appareil : résolution via API host, refus fermé sinon.
 const ICON_ASSET = 'TranscriptOutlineIcon';
@@ -57,9 +57,9 @@ class Runtime {
   get key() { return this.keys.key; }
   listeners = new Set<() => void>();
   diagnostics: Diagnostics = {
-    compatible: false, ready: false, candidates: 0, menu: false, problem: '', keySet: false, last: 'Aucun transfert',
+    compatible: false, ready: false, candidates: 0, menu: false, problem: '', keySet: false, last: 'No transfer yet',
     autoReady: false, incoming: false, ownReplies: false, autoProblem: '',
-    placement: 'Aucun menu de vocal ouvert pour l’instant.', manualExternal: false, manualPublish: false,
+    placement: 'No voice message menu opened yet.', manualExternal: false, manualPublish: false,
   };
   auto?: ClientAutomation;
   engine: Transcriber;
@@ -81,11 +81,11 @@ class Runtime {
         // Crée le dossier privé si absent, puis purge AUSSI après redémarrage/crash.
         await FileModule.writeFile('cache', `${CACHE_DIR}/init.txt`, '', 'utf8');
         const cleared = await FileModule.clearFolder('cache', CACHE_DIR);
-        if (cleared !== true) throw new SafeError('cache', 'Purge du cache impossible. Aucun transfert autorisé.');
+        if (cleared !== true) throw new SafeError('cache', 'Unable to clear the cache. No transfer allowed.');
       },
       write: async (name, bytes) => {
         const path = await FileModule.writeFile('cache', `${CACHE_DIR}/${name}`, bytesToBase64(bytes), 'base64');
-        if (typeof path !== 'string' || !path.startsWith('/')) throw new SafeError('file', 'Chemin de cache non pris en charge.');
+        if (typeof path !== 'string' || !path.startsWith('/')) throw new SafeError('file', 'Unsupported cache path.');
         return `file://${path}`;
       },
       remove: async name => {
@@ -93,7 +93,7 @@ class Runtime {
         const path = `${FileModule.getConstants().CacheDirPath}/${relative}`;
         if (await FileModule.fileExists(path)) {
           await FileModule.removeFile('cache', relative);
-          if (await FileModule.fileExists(path)) throw new SafeError('cleanup', 'Suppression du cache impossible.');
+          if (await FileModule.fileExists(path)) throw new SafeError('cleanup', 'Unable to delete the cache.');
         }
       },
     };
@@ -103,8 +103,8 @@ class Runtime {
   /** Mise à jour différée depuis un rendu (patch du menu) : évite un setState pendant le rendu d’un autre composant. */
   defer(update: Partial<Diagnostics>) { void Promise.resolve().then(() => { if (this.alive) this.update(update); }); }
   pause() { this.auto?.pause(); this.keys.suspend(); this.engine.cancelAll(); this.engine.clearResults(); }
-  async forget() { this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.delete(); this.update({ last: 'Clé supprimée du coffre' }); }
-  async setKey(value: string) { if (!this.alive) throw new SafeError('stopped', 'Plugin arrêté.'); this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.save(value); }
+  async forget() { this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.delete(); this.update({ last: 'Key deleted from the vault' }); }
+  async setKey(value: string) { if (!this.alive) throw new SafeError('stopped', 'Plugin stopped.'); this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.save(value); }
   notifyAuto(autoReady: boolean, mode: AutoMode, autoProblem?: string) { this.update({ autoReady, incoming: mode.incoming, ownReplies: mode.ownReplies, ...(autoProblem !== undefined ? { autoProblem } : {}) }); }
 }
 let runtime: Runtime | undefined;
@@ -137,26 +137,26 @@ function KeyEditor({ rt, onDone, onCancel }: { rt: Runtime; onDone?(): void; onC
     void rt.setKey(value).then(() => {
       if (!rt.alive) return;
       // Une résolution ne prouve pas la disponibilité : en arrière-plan la clé reste volontairement vide.
-      if (rt.diagnostics.keySet) onDone?.(); else setError('Écriture terminée, clé indisponible pour l’instant : revenez au premier plan puis vérifiez l’état.');
+      if (rt.diagnostics.keySet) onDone?.(); else setError('Write completed, but the key is not available yet: bring the app to the foreground, then check the status.');
     }).catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setSaving(false); });
   };
   return <Stack spacing={8}>
-    <Note>Clé chiffrée par Android Keystore, hors sauvegardes, réutilisée après retour au premier plan et redémarrage. Forme vérifiée localement seulement : aucune validation auprès d’ElevenLabs, aucun transfert sans bridge natif.</Note>
-    <TextInput accessibilityLabel="Clé API ElevenLabs (masquée)" placeholder="Clé ElevenLabs" placeholderTextColor="#adb2c4" value={entry} onChangeText={setEntry} secureTextEntry autoCorrect={false} autoCapitalize="none" autoComplete="off" textContentType="none" importantForAutofill="no" contextMenuHidden style={secretInputStyle} editable={rt.alive && !saving} />
-    <Button text={d.keySet ? 'Remplacer la clé sécurisée' : 'Enregistrer la clé sécurisée'} variant="primary" loading={saving} disabled={!entry.trim() || !rt.alive || saving} onPress={save} />
-    {onCancel && <Button text="Annuler" variant="tertiary" disabled={saving} onPress={() => { setEntry(''); setError(''); onCancel(); }} />}
+    <Note>Key encrypted by Android Keystore, excluded from backups, and reused after returning to the foreground and after a restart. Format checked locally only: no validation with ElevenLabs, and no transfer without the native bridge.</Note>
+    <TextInput accessibilityLabel="ElevenLabs API key (hidden)" placeholder="ElevenLabs key" placeholderTextColor="#adb2c4" value={entry} onChangeText={setEntry} secureTextEntry autoCorrect={false} autoCapitalize="none" autoComplete="off" textContentType="none" importantForAutofill="no" contextMenuHidden style={secretInputStyle} editable={rt.alive && !saving} />
+    <Button text={d.keySet ? 'Replace the secured key' : 'Save the secured key'} variant="primary" loading={saving} disabled={!entry.trim() || !rt.alive || saving} onPress={save} />
+    {onCancel && <Button text="Cancel" variant="tertiary" disabled={saving} onPress={() => { setEntry(''); setError(''); onCancel(); }} />}
     {!!error && <Note tone="critical" alert>{error}</Note>}
   </Stack>;
 }
 function KeySection({ rt }: { rt: Runtime }) {
   const d = useRuntime(rt)!; const [editing, setEditing] = useState(false); const [deleting, setDeleting] = useState(false); const [error, setError] = useState('');
   const { TableRowGroup, TableRow } = Design;
-  const vaultProblem = d.problem.startsWith('Coffre') ? d.problem : '';
+  const vaultProblem = d.problem.startsWith('Android vault') ? d.problem : '';
   return <>
-    <TableRowGroup title="Clé API ElevenLabs" description={d.keySet ? 'Forme vérifiée localement. Ni ElevenLabs ni le coffre Android réel ne sont validés avant un test appareil.' : undefined}>
-      <TableRow label="Clé sécurisée" subLabel={d.keySet ? 'Présente en mémoire, chiffrée par Android Keystore.' : vaultProblem || 'Aucune clé en mémoire.'} />
-      {!editing && <TableRow label={d.keySet ? 'Remplacer la clé' : 'Enregistrer une clé'} arrow disabled={!rt.alive} onPress={() => { setError(''); setEditing(true); }} />}
-      <TableRow label="Supprimer la clé et les résultats" subLabel={deleting ? 'Suppression du coffre en cours…' : 'Annule les transferts. Réessayez ici si la suppression échoue, même sans clé en mémoire.'} variant="danger" disabled={deleting || !rt.alive} onPress={() => {
+    <TableRowGroup title="ElevenLabs API key" description={d.keySet ? 'Format checked locally. Not yet validated against ElevenLabs or a real Android vault (device test needed).' : undefined}>
+      <TableRow label="Secured key" subLabel={d.keySet ? 'Present in memory, encrypted by Android Keystore.' : vaultProblem || 'No key in memory.'} />
+      {!editing && <TableRow label={d.keySet ? 'Replace the key' : 'Save a key'} arrow disabled={!rt.alive} onPress={() => { setError(''); setEditing(true); }} />}
+      <TableRow label="Delete the key and results" subLabel={deleting ? 'Deleting from the vault…' : 'Cancels transfers. Try again here if the deletion fails, even without a key in memory.'} variant="danger" disabled={deleting || !rt.alive} onPress={() => {
         setDeleting(true); setError('');
         void rt.forget().catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setDeleting(false); });
       }} />
@@ -175,9 +175,9 @@ function ManualSection({ rt }: { rt: Runtime }) {
   };
   const { TableRowGroup, TableSwitchRow } = Design;
   return <>
-    <TableRowGroup title="Transcription manuelle" description="Déclenchée uniquement par appui long sur un vocal puis « Transcrire ». Aucun historique analysé, aucun déclenchement automatique.">
-      <TableSwitchRow label="Autoriser l’envoi à ElevenLabs" subLabel="Service externe, coût possible et rétention selon votre offre. Après cet accord, « Transcrire » suffit, sans confirmation par vocal." accessibilityHint="Accord persistant lié à ce compte, révocable à tout moment" value={mode.external} disabled={!rt.alive || !!busy} onValueChange={value => toggle('external', value)} />
-      <TableSwitchRow label="Publier mes transcriptions" subLabel="« Publier » poste le texte de votre propre vocal en réponse, dans son canal. Jamais les vocaux d’autrui, jamais sans appui sur « Publier »." accessibilityHint="Nécessite l’accord d’envoi ; révocable à tout moment" value={mode.publish} disabled={!rt.alive || !!busy || !mode.external} onValueChange={value => toggle('publish', value)} />
+    <TableRowGroup title="Manual transcription" description="Triggered only by long-pressing a voice message, then “Transcribe”. No history is analyzed and nothing is triggered automatically.">
+      <TableSwitchRow label="Allow sending to ElevenLabs" subLabel="External service; cost possible and retention depends on your plan. After this consent, “Transcribe” is enough, with no per-message confirmation." accessibilityHint="Persistent consent tied to this account, revocable at any time" value={mode.external} disabled={!rt.alive || !!busy} onValueChange={value => toggle('external', value)} />
+      <TableSwitchRow label="Publish my transcripts" subLabel="“Publish” posts the text of your own voice message as a reply in its channel. Never other people’s voice messages, and never without pressing “Publish”." accessibilityHint="Requires the sending consent; revocable at any time" value={mode.publish} disabled={!rt.alive || !!busy || !mode.external} onValueChange={value => toggle('publish', value)} />
     </TableRowGroup>
     {(!!error || !!rt.consent.problem) && <Note tone="critical" alert>{error || rt.consent.problem}</Note>}
   </>;
@@ -192,10 +192,10 @@ function AutomaticSection({ rt }: { rt: Runtime }) {
   const canEnable = d.autoReady && d.keySet;
   const { TableRowGroup, TableSwitchRow, TableRow } = Design;
   return <>
-    <TableRowGroup title="Automatique — désactivé par défaut" description={d.autoReady ? 'Chat ouvert seulement, nouveaux vocaux uniquement, aucun historique ni rattrapage. Validation appareil encore requise.' : 'Modules automatiques absents ou ambigus : activation refusée.'}>
-      <TableSwitchRow label="Vocaux d’autrui : transcrire et afficher localement" subLabel="Chaque nouveau vocal du chat ouvert est envoyé à ElevenLabs (coût). N’activez qu’avec l’autorisation des personnes concernées. Rien n’est publié." value={d.incoming} disabled={busy || (!d.incoming && !canEnable)} onValueChange={value => configure({ incoming: value, ownReplies: d.ownReplies })} />
-      <TableSwitchRow label="Mes vocaux : publier la transcription en réponse" subLabel="Après envoi réussi, le texte est publié dans le canal d’origine, visible par ses membres. Coût pour chaque vocal." value={d.ownReplies} disabled={busy || (!d.ownReplies && !canEnable)} onValueChange={value => configure({ incoming: d.incoming, ownReplies: value })} />
-      {(d.incoming || d.ownReplies) && <TableRow label="Désactiver toute automatisation" subLabel="Retrait immédiat pour cette session, puis enregistrement." variant="danger" disabled={busy} onPress={() => configure({ incoming: false, ownReplies: false })} />}
+    <TableRowGroup title="Automatic — off by default" description={d.autoReady ? 'Open chat only, new voice messages only, no history and no catch-up. Device validation still required.' : 'Automatic modules missing or ambiguous: activation refused.'}>
+      <TableSwitchRow label="Others’ voice messages: transcribe and show locally" subLabel="Every new voice message in the open chat is sent to ElevenLabs (cost). Enable only with the permission of the people concerned. Nothing is published." value={d.incoming} disabled={busy || (!d.incoming && !canEnable)} onValueChange={value => configure({ incoming: value, ownReplies: d.ownReplies })} />
+      <TableSwitchRow label="My voice messages: publish the transcript as a reply" subLabel="After a successful send, the text is published in the original channel, visible to its members. Each voice message incurs a cost." value={d.ownReplies} disabled={busy || (!d.ownReplies && !canEnable)} onValueChange={value => configure({ incoming: d.incoming, ownReplies: value })} />
+      {(d.incoming || d.ownReplies) && <TableRow label="Turn off all automation" subLabel="Withdrawn immediately for this session, then saved." variant="danger" disabled={busy} onPress={() => configure({ incoming: false, ownReplies: false })} />}
     </TableRowGroup>
     {(!!error || !!d.autoProblem) && <Note tone="critical" alert>{error || d.autoProblem}</Note>}
   </>;
@@ -204,16 +204,16 @@ function DetailsSection({ rt }: { rt: Runtime }) {
   const d = useRuntime(rt)!; const [open, setOpen] = useState(false);
   const { TableRowGroup, TableRow, Stack } = Design;
   return <>
-    <TableRowGroup title="Détails">
-      <TableRow label="Action du menu d’appui long" subLabel={d.placement} />
-      <TableRow label={open ? 'Masquer le diagnostic et les limites' : 'Diagnostic, limites et licence'} arrow onPress={() => setOpen(!open)} />
+    <TableRowGroup title="Details">
+      <TableRow label="Long-press menu action" subLabel={d.placement} />
+      <TableRow label={open ? 'Hide diagnostics and limits' : 'Diagnostics, limits and license'} arrow onPress={() => setOpen(!open)} />
     </TableRowGroup>
     {open && <Stack spacing={8}>
-      <Note>{`Diagnostic sans identifiants :\nClient ciblé : ${d.compatible ? 'oui' : 'non'}\nCache prêt : ${d.ready ? 'oui' : 'non'}\nModules de menu trouvés : ${d.candidates}\nPatch menu : ${d.menu ? 'actif' : 'inactif'}\n${d.problem || 'Aucun problème détecté'}\nDernière étape : ${d.last}\nAccords manuels effectifs : envoi ${d.manualExternal ? 'oui' : 'non'}, publication ${d.manualPublish ? 'oui' : 'non'}`}</Note>
-      <Note>Politique du menu : insertion seulement dans l’unique groupe natif éligible (lignes non dangereuses avec icônes) avec icône résolue par le host ; sinon refus explicite, jamais de groupe séparé. Structure réelle du client 352.6 non observée : vérification appareil requise.</Note>
-      <Note>Limites : 8 Mio / 5 minutes. Audio envoyé au service tiers ElevenLabs ; coût possible et rétention selon votre offre. Un résultat local ne signifie pas un traitement local. Le transport contrôle les URL initiales/finales et les tailles au mieux, sans garantir le blocage préalable des redirections HTTP ni un plafond mémoire natif strict. Tests téléphone et API réelle non effectués.</Note>
-      <Note>Le coffre protège le fichier au repos, pas contre les autres plugins du même processus. La clé passe en mémoire JS pendant le transfert. Les transcriptions sont effacées en arrière-plan ; le presse-papiers reste géré par Android. Si un retrait d’accord échoue sur le disque, il reste effectif pour la session seulement.</Note>
-      <Note>Copyright 2026 Anezium et contributeurs Valenced. Logiciel libre GPL-3.0, sans garantie. Sources, licence et redistribution : github.com/Anezium/valenced-elevenlabs-transcription. Préversion 0.2.0-dev non publiée.</Note>
+      <Note>{`Diagnostics (no IDs or secrets):\nSupported client: ${d.compatible ? 'yes' : 'no'}\nCache ready: ${d.ready ? 'yes' : 'no'}\nMenu modules found: ${d.candidates}\nMenu patch: ${d.menu ? 'active' : 'inactive'}\n${d.problem || 'No problem detected'}\nLast step: ${d.last}\nEffective manual consents: sending ${d.manualExternal ? 'yes' : 'no'}, publishing ${d.manualPublish ? 'yes' : 'no'}`}</Note>
+      <Note>Menu policy: insert only into the single eligible native group (non-destructive rows with icons), with an icon resolved by the host; otherwise explicit refusal, never a separate group. Actual structure of client 352.6 not observed: device verification required.</Note>
+      <Note>Limits: 8 MiB / 5 minutes. Audio is sent to the third-party service ElevenLabs; cost possible and retention depends on your plan. A local result does not mean local processing. The transport checks initial/final URLs and sizes on a best-effort basis, without guaranteeing that HTTP redirects are blocked beforehand or a strict native memory cap. Phone and real API tests not performed.</Note>
+      <Note>The vault protects the file at rest, not against other plugins in the same process. The key is held in JS memory during the transfer. Transcripts are cleared when the app goes to the background; the clipboard remains managed by Android. If a consent withdrawal fails to persist to disk, it stays effective for the session only.</Note>
+      <Note>Copyright 2026 Anezium and Valenced contributors. Free software under GPL-3.0, without warranty. Sources, license and redistribution: github.com/Anezium/valenced-elevenlabs-transcription. Version 0.2.1.</Note>
     </Stack>}
   </>;
 }
@@ -221,7 +221,7 @@ export function SettingsComponent() {
   const rt = runtime; useRuntime(rt);
   const { Stack } = Design;
   return <Page spacing={0}><ScrollView keyboardShouldPersistTaps="handled"><Stack spacing={16} style={{ padding: 16, paddingBottom: 32 }}>
-    <Note tone="default">{!rt ? 'Activez le plugin pour commencer.' : `Appui long sur un vocal → « ${ACTION_LABEL} ». Envoi manuel sur votre action ; automatique seulement après activation ci-dessous. Clé et accord requis.`}</Note>
+    <Note tone="default">{!rt ? 'Enable the plugin to get started.' : `Long-press a voice message → “${ACTION_LABEL}”. Manual transcription only when you trigger it; automatic only after you enable it below. Key and consent required.`}</Note>
     {rt && <KeySection rt={rt} />}
     {rt && <ManualSection rt={rt} />}
     {rt && <AutomaticSection rt={rt} />}
@@ -244,9 +244,9 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
     if (!enabled || !target || busy || !rt.consent.mode().external) return;
     setPhase('download'); setError(''); setCopied(false);
     try {
-      const result = await rt.engine.run(target, rt.key, true, stage => { if (rt.alive) { setPhase(stage); rt.update({ last: stage === 'upload' ? 'Upload ElevenLabs en cours' : 'Téléchargement Discord en cours' }); } });
-      if (rt.alive && rt.diagnostics.keySet && rt.consent.mode().external) { setText(result); rt.update({ last: 'Transcription reçue et cache audio nettoyé' }); }
-    } catch (e) { if (rt.alive) { setError(safeMessage(e)); rt.update({ last: e instanceof SafeError ? `Échec contrôlé : ${e.code}` : 'Échec contrôlé' }); } }
+      const result = await rt.engine.run(target, rt.key, true, stage => { if (rt.alive) { setPhase(stage); rt.update({ last: stage === 'upload' ? 'ElevenLabs upload in progress' : 'Discord download in progress' }); } });
+      if (rt.alive && rt.diagnostics.keySet && rt.consent.mode().external) { setText(result); rt.update({ last: 'Transcript received and audio cache cleaned' }); }
+    } catch (e) { if (rt.alive) { setError(safeMessage(e)); rt.update({ last: e instanceof SafeError ? `Controlled failure: ${e.code}` : 'Controlled failure' }); } }
     finally { if (rt.alive) setPhase(''); }
   };
   const grant = (kind: ManualKind) => {
@@ -256,7 +256,7 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
   const publish = () => {
     if (!rt.auto || !target || publishing || published) return;
     const allowed = rt.consent.mode().publish === true;
-    if (!allowed) { setError('Accord de publication manuelle requis.'); return; }
+    if (!allowed) { setError('Consent to manual publishing required.'); return; }
     setPublishing(true); setError('');
     void rt.auto.replyManually(target, text, allowed).then(() => { if (rt.alive) setPublished(true); }).catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setPublishing(false); });
   };
@@ -264,44 +264,44 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
   const { ActionSheet, BottomSheetTitleHeader, Button, Card, Stack, Text } = Design;
   const own = !!target && !!text && !!rt.auto?.canReplyTo(target);
   return <ActionSheet>
-    <BottomSheetTitleHeader title={ACTION_LABEL} subtitle={target ? `Vocal de ${Math.ceil(target.seconds)} s · ${(target.size / 1024 / 1024).toFixed(2)} Mio` : undefined} />
+    <BottomSheetTitleHeader title={ACTION_LABEL} subtitle={target ? `Voice message, ${Math.ceil(target.seconds)} s · ${(target.size / 1024 / 1024).toFixed(2)} MiB` : undefined} />
     <ScrollView style={{ maxHeight: 560 }} contentContainerStyle={{ padding: 16, paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
       <Stack spacing={12}>
-        {!rt.alive && <Note tone="critical" alert>Plugin arrêté.</Note>}
+        {!rt.alive && <Note tone="critical" alert>Plugin stopped.</Note>}
         {!text && !busy && <>
           {!d?.keySet && <>
-            <Note tone="default">Une clé API ElevenLabs est nécessaire avant tout transfert.</Note>
+            <Note tone="default">An ElevenLabs API key is required before any transfer.</Note>
             <KeyEditor rt={rt} />
           </>}
           {d?.keySet && !manual.external && <>
-            <Note tone="default">Autoriser une fois : l’audio des vocaux que vous choisissez est envoyé à ElevenLabs (Scribe v2), service externe potentiellement payant, rétention selon votre offre. Ensuite, « Transcrire » suffit, sans nouvelle confirmation. Rien n’est publié sans une action distincte. Réversible dans les paramètres du plugin.</Note>
-            <Button text="J’autorise l’envoi des vocaux choisis à ElevenLabs" variant="primary" loading={granting === 'external'} disabled={!rt.alive || !!granting} onPress={() => grant('external')} />
+            <Note tone="default">Allow once: the audio of the voice messages you choose is sent to ElevenLabs (Scribe v2), an external service that may be paid, with retention depending on your plan. After that, “Transcribe” is enough, with no further confirmation. Nothing is published without a separate action. Reversible in the plugin settings.</Note>
+            <Button text="I allow sending the voice messages I choose to ElevenLabs" variant="primary" loading={granting === 'external'} disabled={!rt.alive || !!granting} onPress={() => grant('external')} />
           </>}
           {d?.keySet && manual.external && <>
-            <Note>Résultat affiché ici seulement. Ne transcrivez les voix d’autrui que si vous pouvez les communiquer à ce prestataire.</Note>
-            {target && rt.engine.wasAttempted(target) && <Note tone="warning" alert>Un envoi a déjà été tenté pour ce vocal : réessayer peut entraîner une seconde facturation, même sans résultat.</Note>}
-            <Button text={error ? 'Réessayer (coût possible)' : 'Transcrire (coût possible)'} variant="primary" disabled={!enabled} onPress={() => { void run(); }} />
+            <Note>Result shown here only. Only transcribe other people’s voice messages if you are allowed to share them with this provider.</Note>
+            {target && rt.engine.wasAttempted(target) && <Note tone="warning" alert>An upload was already attempted for this voice message: retrying may be billed a second time, even without a result.</Note>}
+            <Button text={error ? 'Retry (cost possible)' : 'Transcribe (cost possible)'} variant="primary" disabled={!enabled} onPress={() => { void run(); }} />
           </>}
         </>}
         {busy && <>
-          <Text accessibilityLiveRegion="polite" variant="text-sm/medium" color="text-default">{phase === 'upload' ? 'Envoi à ElevenLabs en cours…' : 'Téléchargement du vocal depuis Discord…'}</Text>
-          <Button text="Annuler" variant="secondary" onPress={() => { if (target) rt.engine.cancel(target); }} />
+          <Text accessibilityLiveRegion="polite" variant="text-sm/medium" color="text-default">{phase === 'upload' ? 'Sending to ElevenLabs…' : 'Downloading the voice message from Discord…'}</Text>
+          <Button text="Cancel" variant="secondary" onPress={() => { if (target) rt.engine.cancel(target); }} />
         </>}
         {!!error && <Note tone="critical" alert>{error}</Note>}
         {!!text && <>
-          <Note>Transcription ElevenLabs — peut contenir des erreurs. Conservée en mémoire seulement.</Note>
+          <Note>ElevenLabs transcript — may contain errors. Kept in memory only.</Note>
           <Card><Text selectable variant="text-md/normal" color="text-default">{text}</Text></Card>
-          <Button text={copied ? 'Copié dans le presse-papiers Android' : 'Copier le texte'} variant="secondary" disabled={!rt.alive || !d?.keySet} onPress={() => { try { Clipboard.setString(text); setCopied(true); } catch { setError('Presse-papiers indisponible. Vous pouvez sélectionner le texte.'); } }} />
-          {own && <Note>Après un envoi incertain, vérifiez le canal avant de republier : doublon possible. Aucun renvoi automatique.</Note>}
+          <Button text={copied ? 'Copied to the Android clipboard' : 'Copy the text'} variant="secondary" disabled={!rt.alive || !d?.keySet} onPress={() => { try { Clipboard.setString(text); setCopied(true); } catch { setError('Clipboard unavailable. You can select the text instead.'); } }} />
+          {own && <Note>After an uncertain send, check the channel before publishing again: a duplicate is possible. No automatic resend.</Note>}
           {own && (manual.publish
-            ? <Button text={published ? 'Réponse publiée' : 'Publier en réponse à mon vocal'} variant="primary" loading={publishing} disabled={publishing || published || !rt.alive || !d?.keySet} onPress={publish} />
+            ? <Button text={published ? 'Reply published' : 'Publish as a reply to my voice message'} variant="primary" loading={publishing} disabled={publishing || published || !rt.alive || !d?.keySet} onPress={publish} />
             : <>
-              <Note>Pour publier le texte de vos propres vocaux en réponse dans leur canal, autorisez-le une fois. Jamais les vocaux d’autrui. Après un envoi incertain, aucun renvoi automatique : un doublon reste possible.</Note>
-              <Button text="J’autorise la publication de mes transcriptions" variant="secondary" loading={granting === 'publish'} disabled={!rt.alive || !!granting} onPress={() => grant('publish')} />
+              <Note>To publish the text of your own voice messages as a reply in their channel, allow it once. Never other people’s voice messages. After an uncertain send, there is no automatic resend: a duplicate remains possible.</Note>
+              <Button text="I allow publishing my transcripts" variant="secondary" loading={granting === 'publish'} disabled={!rt.alive || !!granting} onPress={() => grant('publish')} />
             </>)}
-          <Button text="Effacer les transcriptions locales" variant="tertiary" onPress={() => { rt.auto?.invalidate(); rt.engine.clearResults(); setText(''); setCopied(false); setPublished(false); }} />
+          <Button text="Clear local transcripts" variant="tertiary" onPress={() => { rt.auto?.invalidate(); rt.engine.clearResults(); setText(''); setCopied(false); setPublished(false); }} />
         </>}
-        <Button text={busy ? 'Fermer (annule l’envoi)' : 'Fermer'} variant="tertiary" onPress={close} />
+        <Button text={busy ? 'Close (cancels the upload)' : 'Close'} variant="tertiary" onPress={close} />
       </Stack>
     </ScrollView>
   </ActionSheet>;
@@ -309,7 +309,7 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
 function openSheet(rt: Runtime, target?: Target, initialError?: string) {
   if (!rt.alive) return;
   try { ActionSheetActionCreators.openLazy(Promise.resolve({ default: TranscriptSheet }), SHEET_KEY, { rt, target, initialError }, 'stack'); }
-  catch { rt.update({ problem: 'Feuille de transcription indisponible sur ce build.' }); }
+  catch { rt.update({ problem: 'Transcription sheet unavailable on this build.' }); }
 }
 /** Icône via les API host évidentes (types vendor, usage du host lui-même). Aucune invention : undefined = refus. */
 function resolveIcon(rt: Runtime): ResolvedIcon | undefined {
@@ -353,25 +353,25 @@ export default plugin<{ jsonStorage: Document }>({
       rt.listeners.clear();
     });
     try {
-      if (typeof XMLHttpRequest !== 'function' || typeof FormData !== 'function' || typeof AbortController !== 'function' || typeof URL !== 'function') throw new SafeError('runtime', 'Primitives réseau manquantes ; aucun transfert possible.');
+      if (typeof XMLHttpRequest !== 'function' || typeof FormData !== 'function' || typeof AbortController !== 'function' || typeof URL !== 'function') throw new SafeError('runtime', 'Missing network primitives; no transfer possible.');
       const compatible = compatibleClient(ClientInfoModule.getConstants());
       rt.update({ compatible });
-      if (!compatible) { rt.update({ problem: 'Build client différent ou métadonnées absentes : cible 352.6 / 352206 (ou code long fourni) / canaryRelease. Plugin désactivé pour ce client.' }); return; }
+      if (!compatible) { rt.update({ problem: 'Different client build or missing metadata: target 352.6 / 352206 (or build 35220600000000) / canaryRelease. Plugin disabled for this client.' }); return; }
       rt.auto = new ClientAutomation(rt, rt.store.automation); rt.auto.start();
       void rt.consent.load();
-      const restoreKey = () => { void rt.keys.resume().then(() => { if (rt.alive) rt.auto?.resume(); }).catch(() => { if (rt.alive) rt.update({ problem: 'Coffre Android indisponible. Aucun stockage en clair ni transfert sans clé.' }); }); };
+      const restoreKey = () => { void rt.keys.resume().then(() => { if (rt.alive) rt.auto?.resume(); }).catch(() => { if (rt.alive) rt.update({ problem: 'Android vault unavailable. No plaintext storage and no transfer without a key.' }); }); };
       appState = AppState.addEventListener('change', state => { if (state !== 'active') rt.pause(); else restoreKey(); });
       restoreKey();
-      void rt.engine.initialize().then(() => { if (rt.alive) rt.update({ ready: true }); }).catch(() => { if (rt.alive) rt.update({ ready: false, problem: 'Cache privé impossible à purger. Arrêtez puis relancez le plugin.' }); });
+      void rt.engine.initialize().then(() => { if (rt.alive) rt.update({ ready: true }); }).catch(() => { if (rt.alive) rt.update({ ready: false, problem: 'Private cache cannot be cleared. Stop and restart the plugin.' }); });
       const candidates = new Set<unknown>();
       type LongPress = FC<{ message: unknown; channel: unknown }>;
       unsubscribe = getModules(withName<LongPress>('LongPressMessageActionSheet'), mod => {
         try {
         if (!rt.alive || candidates.has(mod)) return;
         candidates.add(mod); rt.update({ candidates: candidates.size });
-        if (candidates.size !== 1) { unpatch?.(); unpatch = undefined; rt.update({ menu: false, problem: 'Plusieurs modules de menu correspondent ; aucun patch conservé.' }); return; }
+        if (candidates.size !== 1) { unpatch?.(); unpatch = undefined; rt.update({ menu: false, problem: 'Several menu modules match; no patch kept.' }); return; }
         const module = mod as unknown as { default: LongPress };
-        if (!module || typeof module.default !== 'function') { rt.update({ problem: 'Signature du menu non prise en charge.' }); return; }
+        if (!module || typeof module.default !== 'function') { rt.update({ problem: 'Unsupported menu signature.' }); return; }
         unpatch = instead(module, 'default', function (args, original) {
           const tree = Reflect.apply(original, this, args);
           if (!rt.alive || !rt.diagnostics.menu) return tree;
@@ -382,21 +382,21 @@ export default plugin<{ jsonStorage: Document }>({
             if (!target && !error) return tree;
             // Alias déclarés par les types vendor : ActionSheetRow = TableRow, ActionSheetRowGroup = TableRowGroup. Valeurs absentes ignorées.
             const { ActionSheet, ActionSheetRow, TableRow, TableRowGroup } = Design;
-            if (!ActionSheet || !ActionSheetRow || !ActionSheetRow.Icon) { rt.defer({ placement: 'Refusée : composants natifs ActionSheet/ActionSheetRow/Icon indisponibles sur ce build ; aucune insertion.' }); return tree; }
+            if (!ActionSheet || !ActionSheetRow || !ActionSheetRow.Icon) { rt.defer({ placement: 'Refused: native ActionSheet/ActionSheetRow/Icon components unavailable on this build; nothing inserted.' }); return tree; }
             const plan = planInsertion(tree, { sheet: ActionSheet, groups: identities(ActionSheetRow.Group, TableRow?.Group, TableRowGroup), rows: identities(ActionSheetRow, TableRow) });
             if (!plan.ok) { rt.defer({ placement: REFUSAL_MESSAGES[plan.reason] }); return tree; }
             const icon = resolveIcon(rt);
-            if (!icon) { rt.defer({ placement: `Refusée : icône native « ${ICON_ASSET} » introuvable via le host ; aucune insertion sans icône.` }); return tree; }
+            if (!icon) { rt.defer({ placement: `Refused: native icon “${ICON_ASSET}” not found via the host; nothing inserted without an icon.` }); return tree; }
             const row = <ActionSheetRow key="anezium-elevenlabs-transcription" label={ACTION_LABEL} icon={<ActionSheetRow.Icon {...icon} />} onPress={() => openSheet(rt, target, error)} />;
-            rt.defer({ placement: `Insérée en tête de l’unique groupe natif éligible (${plan.groups} groupe(s) visibles). Structure réelle du client à vérifier sur appareil.` });
+            rt.defer({ placement: `Inserted at the top of the single eligible native group (${plan.groups} visible group(s)). Actual client structure to be verified on a device.` });
             return appendToGroup(tree, plan.group, row) as ReactElement;
-          } catch { rt.defer({ problem: 'Menu vocal non pris en charge ; aucun transfert déclenché.' }); return tree; }
+          } catch { rt.defer({ problem: 'Voice message menu not supported; no transfer triggered.' }); return tree; }
         });
         rt.update({ menu: true });
         } catch {
           try { unpatch?.(); } catch { /* désactivation logique même si dépatch impossible */ }
           unpatch = undefined;
-          rt.update({ menu: false, problem: 'Module de menu non patchable ; aucun transfert autorisé.' });
+          rt.update({ menu: false, problem: 'Menu module cannot be patched; no transfer allowed.' });
         }
       }, { returnNamespace: true });
     } catch (e) { unpatch?.(); rt.update({ menu: false, problem: safeMessage(e) }); }

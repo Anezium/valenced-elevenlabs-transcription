@@ -27,8 +27,8 @@ for (const [name,mode] of Object.entries(modes)) for (const state of ['pending',
     assert.equal(rt.diagnostics.incoming,mode.incoming,path); assert.equal(rt.diagnostics.ownReplies,mode.ownReplies,path);
     if(state==='failure') {
      await assert.rejects(write,{code:'preferences'});
-     assert.match(rt.diagnostics.autoProblem,/session seulement/);
-     assert.match(rt.diagnostics.autoProblem,/redémarrage/);
+     assert.match(rt.diagnostics.autoProblem,/session only/);
+     assert.match(rt.diagnostics.autoProblem,/restart/);
     } else await tick();
     assert.equal(h.prefs.incoming,true); assert.equal(h.prefs.ownReplies,true); // deliberately stale disk
     await resume(h);

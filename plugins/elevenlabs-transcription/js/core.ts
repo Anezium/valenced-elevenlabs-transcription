@@ -8,38 +8,38 @@ export class SafeError extends Error {
   constructor(public readonly code: string, message: string) { super(message); this.name = 'SafeError'; }
 }
 export function safeMessage(error: unknown): string {
-  return error instanceof SafeError ? error.message : 'Opération impossible. Aucun détail sensible n’est journalisé. Réessayez manuellement si nécessaire.';
+  return error instanceof SafeError ? error.message : 'Operation failed. No sensitive details are logged. Retry manually if needed.';
 }
 export interface Target { channelId: string; messageId: string; attachmentId: string; url: string; size: number; seconds: number; mime: string }
 const record = (value: unknown): Record<string, unknown> | undefined => value !== null && typeof value === 'object' ? value as Record<string, unknown> : undefined;
 const id = (value: unknown): value is string => typeof value === 'string' && /^\d{1,22}$/.test(value);
 export function validateAudioURL(value: unknown, channelId?: string, attachmentId?: string): string {
-  if (typeof value !== 'string' || value.length > 4096) throw new SafeError('url', 'URL audio Discord non valide.');
+  if (typeof value !== 'string' || value.length > 4096) throw new SafeError('url', 'Invalid Discord audio URL.');
   let url: URL;
-  try { url = new URL(value); } catch { throw new SafeError('url', 'URL audio Discord non valide.'); }
-  if (url.protocol !== 'https:' || !['cdn.discordapp.com', 'media.discordapp.net'].includes(url.hostname) || url.username || url.password || url.port || url.hash) throw new SafeError('host', 'Seuls les fichiers HTTPS des CDN Discord officiels sont autorisés.');
+  try { url = new URL(value); } catch { throw new SafeError('url', 'Invalid Discord audio URL.'); }
+  if (url.protocol !== 'https:' || !['cdn.discordapp.com', 'media.discordapp.net'].includes(url.hostname) || url.username || url.password || url.port || url.hash) throw new SafeError('host', 'Only HTTPS files from the official Discord CDNs are allowed.');
   const match = /^\/attachments\/(\d{1,22})\/(\d{1,22})\/[^/]+$/.exec(url.pathname);
-  if (!match || (channelId !== undefined && match[1] !== channelId) || (attachmentId !== undefined && match[2] !== attachmentId)) throw new SafeError('path', 'Pièce jointe Discord incohérente. Rouvrez le message.');
+  if (!match || (channelId !== undefined && match[1] !== channelId) || (attachmentId !== undefined && match[2] !== attachmentId)) throw new SafeError('path', 'Inconsistent Discord attachment. Reopen the message.');
   return value; // ne réécrit ni la signature ni les paramètres de l’URL.
 }
 export function extractTarget(value: unknown, channel: unknown): Target | undefined {
   const msg = record(value); const chan = record(channel);
   if (!msg || !chan || !id(msg.id) || !id(chan.id)) return undefined;
   if (typeof msg.flags !== 'number' || !Number.isSafeInteger(msg.flags) || (msg.flags & (1 << 13)) === 0) return undefined;
-  if (!Array.isArray(msg.attachments) || msg.attachments.length !== 1) throw new SafeError('attachment', 'Ce vocal doit contenir une seule pièce jointe audio.');
+  if (!Array.isArray(msg.attachments) || msg.attachments.length !== 1) throw new SafeError('attachment', 'This voice message must contain exactly one audio attachment.');
   const a = record(msg.attachments[0]);
-  if (!a || !id(a.id)) throw new SafeError('attachment', 'Métadonnées du vocal non prises en charge.');
+  if (!a || !id(a.id)) throw new SafeError('attachment', 'Unsupported voice message metadata.');
   const size = a.size; const seconds = a.duration_secs ?? a.durationSecs;
-  if (typeof size !== 'number' || !Number.isSafeInteger(size) || size <= 0 || size > MAX_BYTES) throw new SafeError('size', 'Vocal trop volumineux ou taille inconnue (maximum 8 Mio).');
-  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0.1 || seconds > MAX_SECONDS) throw new SafeError('duration', 'Durée inconnue ou hors limite (0,1 seconde à 5 minutes).');
+  if (typeof size !== 'number' || !Number.isSafeInteger(size) || size <= 0 || size > MAX_BYTES) throw new SafeError('size', 'Voice message too large or size unknown (maximum 8 MiB).');
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0.1 || seconds > MAX_SECONDS) throw new SafeError('duration', 'Duration unknown or out of range (0.1 second to 5 minutes).');
   const rawMime = a.content_type ?? a.contentType;
   const mime = typeof rawMime === 'string' ? rawMime.split(';')[0]!.toLowerCase() : '';
-  if (!MIME.has(mime)) throw new SafeError('format', 'Format audio absent ou non pris en charge.');
+  if (!MIME.has(mime)) throw new SafeError('format', 'Audio format missing or unsupported.');
   return { channelId: chan.id, messageId: msg.id, attachmentId: a.id, url: validateAudioURL(a.url, chan.id, a.id), size, seconds, mime };
 }
 export function validateTarget(target: Target): Target {
   const result = extractTarget({ id: target.messageId, flags: 1 << 13, attachments: [{ id: target.attachmentId, url: target.url, size: target.size, duration_secs: target.seconds, content_type: target.mime }] }, { id: target.channelId });
-  if (!result) throw new SafeError('target', 'Vocal non pris en charge.');
+  if (!result) throw new SafeError('target', 'Unsupported voice message.');
   return result;
 }
 export function compatibleClient(info: unknown): boolean {
@@ -48,11 +48,11 @@ export function compatibleClient(info: unknown): boolean {
 }
 export function validateKey(key: string): string {
   const result = key.trim();
-  if (result.length < 16 || result.length > 512 || !/^[A-Za-z0-9_-]+$/.test(result)) throw new SafeError('key', 'Saisissez une clé API ElevenLabs valide dans le champ masqué.');
+  if (result.length < 16 || result.length > 512 || !/^[A-Za-z0-9_-]+$/.test(result)) throw new SafeError('key', 'Enter a valid ElevenLabs API key in the hidden field.');
   return result;
 }
 export function throwIfAborted(signal: AbortSignal) {
-  if (signal.aborted) throw new SafeError('cancelled', 'Opération annulée. Si l’upload avait commencé, une facturation reste possible.');
+  if (signal.aborted) throw new SafeError('cancelled', 'Operation cancelled. If the upload had started, billing is still possible.');
 }
 export interface Download { bytes: ArrayBuffer; finalURL: string; mime: string }
 export interface Transport {
@@ -88,22 +88,22 @@ export class Transcriber {
     return item?.fingerprint === this.fingerprint(t) ? item.text : undefined;
   }
   run(target: Target, key: string, confirmed: boolean, phase: (phase: Phase) => void = () => {}): Promise<string> {
-    if (this.stopped) return Promise.reject(new SafeError('stopped', 'Plugin arrêté.'));
-    if (this.cleanupFailed) return Promise.reject(new SafeError('cleanup', 'Cache non nettoyé : arrêtez puis relancez le plugin.'));
+    if (this.stopped) return Promise.reject(new SafeError('stopped', 'Plugin stopped.'));
+    if (this.cleanupFailed) return Promise.reject(new SafeError('cleanup', 'Cache not cleaned: stop and restart the plugin.'));
     let t: Target; let secret: string;
-    try { t = validateTarget(target); if (confirmed !== true) throw new SafeError('consent', 'Confirmation de transfert requise.'); secret = validateKey(key); }
+    try { t = validateTarget(target); if (confirmed !== true) throw new SafeError('consent', 'Transfer confirmation required.'); secret = validateKey(key); }
     catch (e) { return Promise.reject(e); }
     const identity = this.identity(t);
     const pending = this.active.get(identity);
     if (pending) return pending.promise;
     const cached = this.cached(t);
     if (cached !== undefined) return Promise.resolve(cached);
-    if (this.active.size) return Promise.reject(new SafeError('busy', 'Une transcription est déjà en cours.'));
+    if (this.active.size) return Promise.reject(new SafeError('busy', 'A transcription is already in progress.'));
     const controller = new AbortController();
     const name = `${this.session}-${++this.sequence}.audio`;
     const promise = this.perform(t, secret, controller.signal, name, phase).then(text => {
       throwIfAborted(controller.signal);
-      if (this.stopped) throw new SafeError('stopped', 'Plugin arrêté.');
+      if (this.stopped) throw new SafeError('stopped', 'Plugin stopped.');
       if (!this.stopped && !controller.signal.aborted) {
         if (this.results.size >= 10) this.results.delete(this.results.keys().next().value!);
         this.results.set(identity, { fingerprint: this.fingerprint(t), text });
@@ -121,21 +121,21 @@ export class Transcriber {
       phase('download');
       const audio = await this.transport.download(t, signal); throwIfAborted(signal);
       validateAudioURL(audio.finalURL, t.channelId, t.attachmentId);
-      if (!MIME.has(audio.mime.split(';')[0]!.toLowerCase())) throw new SafeError('format', 'Le CDN n’a pas retourné un fichier audio pris en charge.');
-      if (!(audio.bytes instanceof ArrayBuffer) || audio.bytes.byteLength === 0 || audio.bytes.byteLength > MAX_BYTES || audio.bytes.byteLength !== t.size) throw new SafeError('size', 'Taille réelle audio inattendue ou supérieure à la limite.');
+      if (!MIME.has(audio.mime.split(';')[0]!.toLowerCase())) throw new SafeError('format', 'The CDN did not return a supported audio file.');
+      if (!(audio.bytes instanceof ArrayBuffer) || audio.bytes.byteLength === 0 || audio.bytes.byteLength > MAX_BYTES || audio.bytes.byteLength !== t.size) throw new SafeError('size', 'Unexpected actual audio size, or size above the limit.');
       writeAttempted = true;
       this.residual.add(name);
       const uri = await this.files.write(name, audio.bytes); throwIfAborted(signal);
-      if (!/^file:\/\//.test(uri)) throw new SafeError('file', 'Le cache audio local n’est pas disponible.');
+      if (!/^file:\/\//.test(uri)) throw new SafeError('file', 'The local audio cache is not available.');
       phase('upload'); this.attempted.add(this.identity(t));
       const text = await this.transport.upload(uri, t.mime, key, signal); throwIfAborted(signal);
-      if (typeof text !== 'string' || !text.trim() || text.length > 100000) throw new SafeError('response', 'La réponse ElevenLabs ne contient pas de transcription exploitable.');
+      if (typeof text !== 'string' || !text.trim() || text.length > 100000) throw new SafeError('response', 'The ElevenLabs response does not contain a usable transcript.');
       return text;
     } finally {
       key = '';
       if (writeAttempted) {
         try { await this.files.remove(name); this.residual.delete(name); }
-        catch { this.cleanupFailed = true; throw new SafeError('cleanup', 'Impossible de supprimer le cache audio. Arrêtez puis relancez le plugin avant de réessayer.'); }
+        catch { this.cleanupFailed = true; throw new SafeError('cleanup', 'Unable to delete the audio cache. Stop and restart the plugin before retrying.'); }
       }
     }
   }

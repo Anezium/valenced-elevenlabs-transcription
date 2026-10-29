@@ -67,9 +67,9 @@ export function planInsertion(tree: unknown, identity: MenuIdentity): InsertionP
   return { ok: true, group: eligible[0]!, groups: groups.length };
 }
 export const REFUSAL_MESSAGES: Record<InsertionRefusal, string> = {
-  sheet: 'Refusée : feuille native introuvable ou multiple ; aucune insertion.',
-  budget: 'Refusée : arbre du menu trop profond ou cyclique ; aucune insertion.',
-  'no-group': 'Refusée : aucun groupe d’actions natif visible ; aucun groupe séparé ajouté.',
-  'no-eligible-group': 'Refusée : aucun groupe natif éligible (lignes non dangereuses avec icônes) ; aucune insertion.',
-  ambiguous: 'Refusée : plusieurs groupes natifs éligibles ; aucune insertion sans vérification appareil.',
+  sheet: 'Refused: native sheet not found or found more than once; nothing inserted.',
+  budget: 'Refused: menu tree too deep or cyclic; nothing inserted.',
+  'no-group': 'Refused: no visible native action group; no separate group added.',
+  'no-eligible-group': 'Refused: no eligible native group (non-destructive rows with icons); nothing inserted.',
+  ambiguous: 'Refused: several eligible native groups; nothing inserted without on-device verification.',
 };

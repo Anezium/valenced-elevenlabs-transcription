@@ -11,7 +11,7 @@ async function operation(name: string, args: unknown[] = []): Promise<string | n
       return result.key;
     }
     return null;
-  } catch { throw new SafeError('vault', 'Coffre Android indisponible ou clé invalidée. Aucun stockage en clair. Réessayez ou supprimez la clé avant de la remplacer.'); }
+  } catch { throw new SafeError('vault', 'Android vault unavailable or key invalidated. No plaintext storage. Retry or delete the key before replacing it.'); }
 }
 export const nativeVault: Vault = {
   load: () => operation('load'),
@@ -23,5 +23,5 @@ export async function reserveAutomaticIdentity(identity: string): Promise<boolea
     const result = await call('anezium.elevenlabs.auto.reserve', [identity]) as { ok?: boolean; reserved?: boolean };
     if (!result || result.ok !== true || typeof result.reserved !== 'boolean') throw new Error();
     return result.reserved;
-  } catch { throw new SafeError('journal', 'Réservation durable indisponible ou saturée. Aucun traitement automatique.'); }
+  } catch { throw new SafeError('journal', 'Durable reservation unavailable or full. No automatic processing.'); }
 }

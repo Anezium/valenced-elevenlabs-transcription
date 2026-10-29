@@ -7,7 +7,7 @@ test('actual bundle: default opt-out, explicit persisted consent then incoming i
  await h.emit(h.voice());assert.equal(h.calls.filter(x=>x==='stt').length,0);
  await rt.auto.configure({incoming:true,ownReplies:false});assert.equal(h.prefs.external,true);assert.equal(h.prefs.publish,false);
  const vocal=h.voice(2);await h.emit(vocal);assert.equal(h.calls.filter(x=>x==='stt').length,1);assert.equal(h.posts.length,0);
- const row=new h.RowManager().generate({message:vocal});assert.equal(row.changeType,2);assert.match(row.message.content.at(-1).content,/Transcription locale/);
+ const row=new h.RowManager().generate({message:vocal});assert.equal(row.changeType,2);assert.match(row.message.content.at(-1).content,/Local transcript/);
  assert.match(row.message.content.at(-1).content,/@everyone/);assert.equal(row.message.content.at(-1).type,'text');
  assert.equal(vocal.content,'');assert.equal(vocal.attachments.length,1);assert.equal(h.network,0);
  const again=new h.RowManager().generate({message:vocal});assert.equal(again.message.content.length,2); // never duplicate cached nodes
@@ -22,7 +22,7 @@ test('actual bundle: own SENDING/read ACK ignored; SENT create/server success po
  const post=h.posts[0];assert.equal(post.url,'/channels/1/messages');assert.equal(post.retries,0);
  assert.deepEqual(post.body.message_reference,{channel_id:'1',message_id:own.id,fail_if_not_exists:true});
  assert.deepEqual(post.body.allowed_mentions,{parse:[],replied_user:false});assert.equal(post.body.enforce_nonce,true);assert.equal(post.body.nonce,`stt${own.id}`);
- assert.match(post.body.content,/Texte synthétique/);await h.emit(own);assert.equal(h.posts.length,1);
+ assert.equal(post.body.content,'Transcript:\nTexte synthétique @everyone <@123>');await h.emit(own);assert.equal(h.posts.length,1);
  await h.emit({...h.voice(3,true),flags:0,content:post.body.content,attachments:[]});assert.equal(h.posts.length,1); // no feedback
  assert.equal(h.network,0);h.stop();await tick();
 });
@@ -78,21 +78,21 @@ test('actual bundle: rendered settings switches persist separate initial cost/pu
  const h=clientHost();const rt=await h.ready();
  const switches=()=>h.collect(h.definition.SettingsComponent()).filter(x=>x.type==='TableSwitchRow').map(x=>x.props);
  const rows=()=>h.collect(h.definition.SettingsComponent()).filter(x=>x.type===h.ActionSheetRow).map(x=>x.props);
- let incoming=switches().find(x=>x.label.startsWith('Vocaux d’autrui'));assert(incoming);assert.equal(incoming.disabled,false);assert.equal(incoming.value,false);
- assert.equal(rows().find(x=>x.label==='Désactiver toute automatisation'),undefined);
+ let incoming=switches().find(x=>x.label.startsWith('Others’ voice messages'));assert(incoming);assert.equal(incoming.disabled,false);assert.equal(incoming.value,false);
+ assert.equal(rows().find(x=>x.label==='Turn off all automation'),undefined);
  incoming.onValueChange(true);await tick();assert.equal(h.prefs.incoming,true);assert.equal(h.prefs.ownReplies,false);assert.equal(h.prefs.publish,false);
- const own=switches().find(x=>x.label.startsWith('Mes vocaux'));own.onValueChange(true);await tick();assert.equal(h.prefs.ownReplies,true);assert.equal(h.prefs.publish,true);
+ const own=switches().find(x=>x.label.startsWith('My voice messages'));own.onValueChange(true);await tick();assert.equal(h.prefs.ownReplies,true);assert.equal(h.prefs.publish,true);
  assert.deepEqual(Object.keys(h.prefs).sort(),['accountId','external','incoming','manual','ownReplies','publish']);assert(!JSON.stringify(h.prefs).includes(rt.key));
  assert.deepEqual(h.prefs.manual,{external:false,publish:false,accountId:''});assert.deepEqual(rt.consent.mode(),{external:false,publish:false}); // automatic consent never implies manual consent
- assert.equal(switches().find(x=>x.label.startsWith('Vocaux d’autrui')).value,true);
- rows().find(x=>x.label==='Désactiver toute automatisation').onPress();await tick();assert.equal(h.prefs.external,false);assert.equal(h.prefs.publish,false);h.stop();await tick();
+ assert.equal(switches().find(x=>x.label.startsWith('Others’ voice messages')).value,true);
+ rows().find(x=>x.label==='Turn off all automation').onPress();await tick();assert.equal(h.prefs.external,false);assert.equal(h.prefs.publish,false);h.stop();await tick();
 });
 test('actual bundle: manual recovery requires explicit publish consent and own cached vocal',async()=>{
  const h=clientHost();const rt=await h.ready();const own=h.voice(2,true);await h.emit(own);
  const target={channelId:'1',messageId:own.id,attachmentId:'3',url:own.attachments[0].url,size:3,seconds:1,mime:'audio/ogg'};
  rt.engine.cached=()=> 'manual transcript';assert.equal(rt.auto.canReplyTo(target),true);
  await assert.rejects(rt.auto.replyManually(target,'manual transcript',false),{code:'consent'});assert.equal(h.posts.length,0);
- await rt.auto.replyManually(target,'manual transcript',true);assert.equal(h.posts.length,1);assert.equal(h.prefs.ownReplies,undefined);
+ await rt.auto.replyManually(target,'manual transcript',true);assert.equal(h.posts.length,1);assert.equal(h.posts[0].body.content,'Transcript:\nmanual transcript');assert.equal(h.prefs.ownReplies,undefined);
  assert.equal(h.posts[0].body.message_reference.message_id,own.id);
  h.records.set(`1/${own.id}`,{...own,author:{id:'20'}});await assert.rejects(rt.auto.replyManually(target,'manual transcript',true),{code:'reply'});assert.equal(h.posts.length,1);h.stop();await tick();
 });

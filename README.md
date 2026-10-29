@@ -1,65 +1,67 @@
-# Transcription ElevenLabs pour Valenced — préversion de test
+# ElevenLabs Transcription for Valenced
 
-Version `0.2.0-dev`, expérimentale, NON validée sur Android et NON validée de bout en bout avec ElevenLabs/Discord. La distribution n'est pas une certification appareil ni une version stable. La version `0.1.0` reste disponible, sans remplacement de son tag ni de ses assets.
+Version `0.2.1`, experimental, NOT validated on Android and NOT validated end to end with ElevenLabs/Discord. This release is not a device certification. Version `0.1.0` and the previous preview `0.2.0-dev` remain available, with their tags and assets untouched.
 
-## Dépôt et mise à jour
+`0.2.1` changes only the visible texts compared to `0.2.0-dev`: the whole plugin UI, its messages and this README are now in English, and the published reply is labelled `Transcript:` (previously a longer French label). Behavior, consents, limits and the native bridge are unchanged. The version number was bumped from `0.2.0-dev` because the host updater offers an update only for a strictly higher version: an identical version string would never be proposed.
 
-Conserver exactement l'index déjà ajouté dans Valenced :
+## Repository and updates
+
+Keep exactly the index already added in Valenced:
 
 https://raw.githubusercontent.com/Anezium/valenced-elevenlabs-transcription/main/index.json
 
-Le canal `latest` pointe volontairement vers `0.2.0-dev`, tout comme `testing` et `beta`. Il désigne ici la préversion de test, PAS une version stable. L'updater hôte suit le canal enregistré pour ce dépôt ; la version 0.2.0-dev est supérieure à 0.1.0 selon son comparateur. Aucun nouvel index ni changement d'URL n'est nécessaire. Une installation ancienne depuis fichier peut ne pas suivre le dépôt : vérifier sa source dans les réglages des plugins.
+The `latest` channel deliberately points to `0.2.1`, as do `testing` and `beta`. Here it designates the current stable release `0.2.1`. The host updater follows the channel registered for this repository; version 0.2.1 is higher than 0.2.0-dev and 0.1.0 according to its comparator. No new index or URL change is needed. An older install from a file may not follow the repository: check its source in the plugin settings.
 
-Dans Paramètres > Valenced > Plugins, actualiser les dépôts puis vérifier la mise à jour proposée et la confirmer. Un reload peut être nécessaire. Aucun de ces gestes n'a été effectué sur téléphone pour cette publication ; la présentation exacte dépend de l'hôte.
+In Settings > Valenced > Plugins, refresh the repositories, then check the proposed update and confirm it. A reload may be necessary. None of these steps has been performed on a phone for this publication; the exact presentation depends on the host.
 
-Alternative, ZIP plugin sans décompression :
-https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.0-dev/anezium.elevenlabs-transcription@0.2.0-dev.zip
+Alternative, plugin ZIP without extraction:
+https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.1/anezium.elevenlabs-transcription@0.2.1.zip
 
-Le ZIP source n'est PAS installable comme plugin. SHA256 du ZIP plugin (48 205 octets) :
-`3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f`.
+The source ZIP is NOT installable as a plugin. SHA256 of the plugin ZIP (47,508 bytes):
+`1ffcaab4f13982430b77c47085df4801807666b7d6e9a78b7337bddeb09fd450`.
 
-## Cible et bridge natif
+## Target and native bridge
 
-Discord `352.6 (35220600000000) - canaryRelease`, détails `App: 352.6 (352206) canaryRelease`. Source Valenced cible `d3e17fe0416c3dc5f4b4d783b465eeb4a99caec1`, API `1.0.0`. Les dépendances sont strictes : `discord =352.6`, `valenced.api =1.0.0`, complétées par des gardes runtime et unicité/forme des modules.
+Discord `352.6 (35220600000000) - canaryRelease`, details `App: 352.6 (352206) canaryRelease`. Target Valenced source `d3e17fe0416c3dc5f4b4d783b465eeb4a99caec1`, API `1.0.0`. Dependencies are strict: `discord =352.6`, `valenced.api =1.0.0`, complemented by runtime guards and module uniqueness/shape checks.
 
-Le même ZIP inclut `index.js` ET `elevenlabs.jar` contenant du DEX. Le manifest déclare `dist.android.path` et `dist.android.class` ; le chargeur officiel sait charger ce PluginBuilder depuis un plugin externe. Aucun APK modifié ou bridge installé séparément n'est requis par ce contrat source. Ce n'est PAS une preuve d'exécution de ce bridge sur le téléphone de l'utilisateur. Absence de bridge, contexte ou module attendu = refus fermé, pas de stockage en clair de secours.
+The same ZIP includes `index.js` AND `elevenlabs.jar` containing DEX. The manifest declares `dist.android.path` and `dist.android.class`; the official loader can load this PluginBuilder from an external plugin. No modified APK or separately installed bridge is required by this source contract. This is NOT proof that this bridge runs on the user's phone. Missing bridge, context or expected module = fail closed, with no plaintext fallback storage.
 
-## Fonctions et consentements
+## Features and consents
 
-- Clé : champ masqué dans les réglages, enregistrement/suppression par le bridge Android ; AES-256-GCM, clé AndroidKeyStore non exportable, ciphertext/IV dans noBackupFilesDir via AtomicFile. Ne jamais donner sa clé dans un chat/rapport. La persistance après arrêt de processus Android reste à vérifier sur appareil.
-- Action manuelle conservée pour un vocal existant, avec accord de traitement externe/coût. L'insertion dans le groupe natif est refusée si sa structure n'est pas reconnue ; position/icône réelles non validées.
-- Automatisation désactivée par défaut. Accords explicites distincts pour transfert/coût et publication de ses propres transcriptions. Enregistrer la clé n'active pas ces accords et ne vérifie pas la clé chez le fournisseur.
-- Nouveaux vocaux frais dans le canal sélectionné uniquement ; pas de collecte d'historique ni de catch-up. Autrui : rendu local dans le chat, jamais publié par le plugin. Vos vocaux SENT : réponse texte référencée dans le canal d'origine après activation explicite, mentions désactivées.
-- File bornée, contrôle de permissions avant coût et envoi, déduplication durable. Au plus une tentative automatique, PAS garantie de livraison exactement une fois. Journal limité à 1024 réservations, saturation = arrêt fermé, sans rotation automatique.
+- Key: hidden field in the settings, saved/deleted through the Android bridge; AES-256-GCM, non-exportable AndroidKeyStore key, ciphertext/IV in noBackupFilesDir via AtomicFile. Never give your key in a chat/report. Persistence after an Android process kill remains to be verified on a device.
+- Manual action kept for an existing voice message, with consent to external processing/cost. Insertion into the native group is refused if its structure is not recognized; actual position/icon not validated.
+- Automation is off by default. Separate explicit consents for transfer/cost and for publishing your own transcripts. Saving the key does not enable these consents and does not verify the key with the provider.
+- New voice messages in the selected channel only; no history collection and no catch-up. Others' messages: rendered locally in the chat, never published by the plugin. Your SENT voice messages: text reply referencing the original in the original channel after explicit activation, mentions disabled. Published replies start with `Transcript:`.
+- Bounded queue, permission check before cost and sending, durable deduplication. At most one automatic attempt, NO exactly-once delivery guarantee. Journal limited to 1024 reservations; a full journal = fail closed, with no automatic rotation.
 
-## Confidentialité et limites
+## Privacy and limits
 
-Un résultat local n'est pas un traitement local : l'audio est envoyé à ElevenLabs, potentiellement payant. Scribe v2, rétention/coût selon l'offre fournisseur ; aucune promesse de zéro rétention. Autorisation des personnes concernées requise. Plafonds applicatifs : 8 Mio / 5 minutes ; cache mémoire de 10 résultats, file automatique 8 en attente + 1 actif, 3 tentatives/minute.
+A local result is not local processing: the audio is sent to ElevenLabs, potentially paid. Scribe v2, retention/cost depending on the provider plan; no zero-retention promise. Permission from the people concerned is required. Application caps: 8 MiB / 5 minutes; in-memory cache of 10 results, automatic queue of 8 pending + 1 active, 3 attempts/minute.
 
-La protection Keystore concerne le repos, pas l'isolation entre plugins du même UID/processus ni une garantie matérielle. La clé reste en mémoire pendant le traitement. Le transport RN/XHR ne garantit ni blocage natif préalable de toute redirection ni plafond mémoire strict avant allocation. Nettoyage du cache en finally et au démarrage ; échec de purge = refus fermé. Aucun token Discord ajouté au transport audio/STT.
+Keystore protection concerns data at rest, not isolation between plugins of the same UID/process, nor a hardware guarantee. The key stays in memory during processing. Cache cleanup in finally and at startup; a failed purge = fail closed. No Discord token is added to the audio/STT transport. The RN/XHR transport guarantees neither prior native blocking of every redirect nor a strict memory cap before allocation.
 
-Arrière-plan, arrêt, changement de clé/compte/canal ou révocation invalident les travaux en cours. Une requête déjà émise ne peut être rappelée ; coût ou publication déjà engagés restent possibles. Si le disque refuse une révocation, elle vaut pour la session mais les anciens accords peuvent réapparaître après crash/restart : l'UI avertit, réessayer avant de quitter. Ne pas relancer automatiquement un envoi incertain.
+Background, stop, key/account/channel change or revocation invalidate in-flight jobs. A request already sent cannot be recalled; cost or publication already committed remain possible. If the disk refuses a revocation, it holds for the session but the old consents may reappear after a crash/restart: the UI warns, retry before leaving. Do not automatically resend an uncertain reply.
 
-## Vérifications et réserves
+## Verification and caveats
 
-Rebuild du candidat exact : typecheck, 56 tests TS, 49 tests du vrai bundle avec hôte synthétique, 2 probes UI supplémentaires, 41 assertions JVM, compilation contre API hôte réelle, Kotlin et D8 réussis. Audit vendor/secrets et provenance Fable vérifiés ; npm audit sans vulnérabilité signalée. Un scan de motifs n'est pas une preuve absolue d'absence de secrets.
+Rebuild of the exact candidate: typecheck, 56 TS tests, 49 tests of the real bundle with a synthetic host, 2 extra UI probes, 41 JVM assertions, compilation against the real host API, Kotlin and D8 successful. Vendor/secrets audit and Fable provenance verified; npm audit with no reported vulnerability. A pattern scan is not absolute proof of the absence of secrets. All of these checks were re-run for 0.2.1 with `npm run verify` (typecheck, 56 TS tests, 49 real-bundle tests, 41 JVM assertions, native build against the pinned host source, deterministic package).
 
-UI générée réellement par `claude-fable-5-1` / effort high sans substitution ; son run s'est terminé sur HTTP429, pas sur un succès final. Les corrections et le build ont été vérifiés indépendamment.
+UI actually generated by `claude-fable-5-1` / effort high with no substitution; its run ended on HTTP429, not on a final success. Fixes and the build were verified independently. The 0.2.1 texts are an English translation of that UI.
 
-NON vérifiés : AndroidKeyStore/AtomicFile sur appareil, arrêt/rechargement Android réel, menu 352.6, rendu visuel/mobile/TalkBack, hooks client réels et vraie réponse Discord. Aucun appareil installé, audio utilisateur, appel STT payant ni POST Discord exécuté dans cette publication. Les tests synthétiques ne prouvent aucun de ces points. La validation finale v0.2 reste ouverte ; tout test réel demande un accord séparé.
+NOT verified: AndroidKeyStore/AtomicFile on a device, real Android stop/reload, menu 352.6, visual/mobile/TalkBack rendering, real client hooks and an actual Discord reply. No device install, user audio, paid STT call or Discord POST was run in this publication. Synthetic tests prove none of these points. Final v0.2 validation remains open; any real test requires a separate agreement.
 
-## Arrêt et retour arrière
+## Stopping and rollback
 
-Désactiver les modes automatiques puis utiliser « Supprimer la clé » avant de désinstaller le plugin. Le coffre et l'alias Keystore peuvent survivre à la désinstallation du seul plugin. Pas de promesse d'effacement forensic. Nettoyer le presse-papiers si un résultat a été copié ; les messages déjà publiés ne sont pas retirés automatiquement.
+Disable the automatic modes, then use “Delete the key and results” before uninstalling the plugin. The vault and the Keystore alias may survive uninstalling the plugin alone. No forensic erasure promise. Clear the clipboard if a result was copied; messages already published are not removed automatically.
 
-Le canal `legacy` conserve 0.1.0, ainsi que le téléchargement original :
+The `legacy` channel keeps 0.1.0, as well as the original download:
 https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.1.0/anezium.elevenlabs-transcription@0.1.0.zip
 
-Un downgrade peut nécessiter une sélection manuelle de version selon l'hôte ; il n'est pas testé ici. Ne pas supprimer des données pour contourner une erreur.
+A downgrade may require manual version selection depending on the host; it is not tested here. Do not delete data to work around an error.
 
-## Build et sources
+## Build and sources
 
-Node >=22.18 (vérifié 22.21.1), Python >=3.11. Toolchain locale uniquement, voir V020_TECHNICAL.md et scripts/setup-native.py pour versions/hashes/licences. Obtenir la source officielle Valenced au commit cible et définir VALENCED_SOURCE vers son checkout.
+Node >=22.18 (verified 22.21.1), Python >=3.11. Local toolchain only, see V020_TECHNICAL.md and scripts/setup-native.py for versions/hashes/licenses. Obtain the official Valenced source at the target commit and set VALENCED_SOURCE to its checkout.
 
     python3 scripts/setup-native.py
     npm ci --ignore-scripts --legacy-peer-deps
@@ -67,6 +69,6 @@ Node >=22.18 (vérifié 22.21.1), Python >=3.11. Toolchain locale uniquement, vo
     node scripts/audit-dev.mjs
     npm audit --audit-level=high
 
-Sortie : `dist/anezium.elevenlabs-transcription@0.2.0-dev.zip`. `verify` ne modifie pas l'index public. Le CLI officiel génère l'index à partir des ZIP et des canaux explicites dans repo.config.json. PREVIEW_020.md documente les contrôles de distribution. V020_TECHNICAL.md et V020_DIAGNOSTIC.md conservent l'historique des étapes, pas l'état courant d'autorisation.
+Output: `dist/anezium.elevenlabs-transcription@0.2.1.zip`. `verify` does not modify the public index. The official CLI generates the index from the ZIPs and the explicit channels in repo.config.json. PREVIEW_020.md documents the distribution checks. V020_TECHNICAL.md and V020_DIAGNOSTIC.md keep the history of the steps, not the current authorization state; these engineering documents are still in French.
 
-GPL-3.0-only, sans garantie ; attributions dans NOTICE, API externes et sources vendored épinglées. Aucun lien officiel avec Discord, Valenced ou ElevenLabs.
+GPL-3.0-only, without warranty; attributions in NOTICE, external APIs and pinned vendored sources. No official affiliation with Discord, Valenced or ElevenLabs.

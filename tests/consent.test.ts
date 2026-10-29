@@ -55,10 +55,10 @@ test('withdrawal is immediate, cascades publish, and reports honestly when the d
   release(); await revoke; assert.deepEqual(manualOf(f.disk), { external: false, publish: false, accountId: '10' });
   await f.consent.set('external', true); await f.consent.set('publish', true); f.fail(true);
   await assert.rejects(f.consent.set('publish', false), { code: 'preferences' });
-  assert.deepEqual(f.consent.mode(), { external: true, publish: false }); assert.match(f.consent.problem, /session seulement/); assert.match(f.consent.problem, /redémarrage/);
+  assert.deepEqual(f.consent.mode(), { external: true, publish: false }); assert.match(f.consent.problem, /session only/); assert.match(f.consent.problem, /restart/);
   assert.equal(manualOf(f.disk).publish, true);
   await assert.rejects(f.consent.set('publish', true), { code: 'preferences' });
-  assert.deepEqual(f.consent.mode(), { external: true, publish: false }); assert.match(f.consent.problem, /rien n’est autorisé/);
+  assert.deepEqual(f.consent.mode(), { external: true, publish: false }); assert.match(f.consent.problem, /nothing is authorized/);
   f.fail(false); await f.consent.set('publish', false); assert.equal(f.consent.problem, ''); assert.equal(manualOf(f.disk).publish, false);
 });
 test('account bound: other account sees nothing, unknown account cannot grant, regrant rebinds', async () => {
@@ -109,7 +109,7 @@ test('obsolete grant resolving after a newer withdrawal does not re-grant; stop 
 });
 test('read failure fails closed with a visible problem; a later explicit grant recovers; malformed records normalized', async () => {
   const f = fixture({ ...DEFAULT_AUTO, manual: { external: true, publish: true, accountId: '10' } }); f.readFail(true);
-  await f.consent.load(); assert.deepEqual(f.consent.mode(), { external: false, publish: false }); assert.match(f.consent.problem, /non lus/);
+  await f.consent.load(); assert.deepEqual(f.consent.mode(), { external: false, publish: false }); assert.match(f.consent.problem, /could not be read/);
   f.readFail(false); await f.consent.set('external', true); assert.deepEqual(f.consent.mode(), { external: true, publish: false }); assert.equal(f.consent.problem, '');
   assert.deepEqual(normalizeManual({ external: 'true', publish: 1, accountId: 'abc' }), DEFAULT_MANUAL);
   assert.deepEqual(normalizeManual(null), DEFAULT_MANUAL);

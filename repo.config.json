@@ -1,10 +1,11 @@
 {
-  "name": "Anezium — Transcription ElevenLabs (expérimental)",
-  "description": "Préversion de test 0.2.0-dev : coffre Android et automatisation opt-in. Android et API réelle non validés ; coûts possibles.",
+  "name": "Anezium — ElevenLabs Transcription (experimental)",
+  "description": "Version 0.2.1: Android vault and opt-in automation. Android and the real API are not validated; costs possible.",
   "channels": {
     "anezium.elevenlabs-transcription": {
-      "latest": "0.2.0-dev",
-      "testing": "0.2.0-dev",
+      "latest": "0.2.1",
+      "beta": "0.2.1",
+      "testing": "0.2.1",
       "legacy": "0.1.0"
     }
   }

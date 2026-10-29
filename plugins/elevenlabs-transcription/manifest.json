@@ -1,10 +1,10 @@
 {
   "format": 1,
   "id": "anezium.elevenlabs-transcription",
-  "name": "Transcription ElevenLabs (expérimental)",
-  "description": "Candidat local : coffre Android Keystore, UI Fable et transcription opt-in ; autrui local, vos vocaux en réponse après envoi. Runtime Android non validé, publication soumise à revue.",
+  "name": "ElevenLabs Transcription (experimental)",
+  "description": "Local candidate: Android Keystore vault, Fable UI and opt-in transcription; others' voice messages transcribed locally; your own get a transcript reply once sent. Android runtime not validated, publication subject to review.",
   "author": "Anezium / Forge",
-  "version": "0.2.0-dev",
+  "version": "0.2.1",
   "dependencies": {
     "valenced.api": {"version": "=1.0.0"},
     "discord": {"version": "=352.6"}

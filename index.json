@@ -1,16 +1,16 @@
 {
   "format": 1,
-  "name": "Anezium — Transcription ElevenLabs (expérimental)",
-  "description": "Préversion de test 0.2.0-dev : coffre Android et automatisation opt-in. Android et API réelle non validés ; coûts possibles.",
+  "name": "Anezium — ElevenLabs Transcription (experimental)",
+  "description": "Version 0.2.1: Android vault and opt-in automation. Android and the real API are not validated; costs possible.",
   "plugins": {
     "anezium.elevenlabs-transcription": {
-      "name": "Transcription ElevenLabs (expérimental)",
-      "description": "Candidat local : coffre Android Keystore, UI Fable et transcription opt-in ; autrui local, vos vocaux en réponse après envoi. Runtime Android non validé, publication soumise à revue.",
+      "name": "ElevenLabs Transcription (experimental)",
+      "description": "Local candidate: Android Keystore vault, Fable UI and opt-in transcription; others' voice messages transcribed locally; your own get a transcript reply once sent. Android runtime not validated, publication subject to review.",
       "author": "Anezium / Forge",
       "channels": {
-        "latest": "0.2.0-dev",
-        "beta": "0.2.0-dev",
-        "testing": "0.2.0-dev",
+        "latest": "0.2.1",
+        "beta": "0.2.1",
+        "testing": "0.2.1",
         "legacy": "0.1.0"
       },
       "versions": {
@@ -31,6 +31,19 @@
           "url": "https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.0-dev/anezium.elevenlabs-transcription@0.2.0-dev.zip",
           "sha256": "3329dca5b8ba06ef276e1b62a4cf0ae4001217e98e1515800fd52ca4bbeca08f",
           "size": 48205,
+          "dependencies": {
+            "valenced.api": {
+              "version": "=1.0.0"
+            },
+            "discord": {
+              "version": "=352.6"
+            }
+          }
+        },
+        "0.2.1": {
+          "url": "https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.1/anezium.elevenlabs-transcription@0.2.1.zip",
+          "sha256": "1ffcaab4f13982430b77c47085df4801807666b7d6e9a78b7337bddeb09fd450",
+          "size": 47508,
           "dependencies": {
             "valenced.api": {
               "version": "=1.0.0"

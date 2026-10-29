@@ -50,7 +50,7 @@ export class PreferenceStore<A extends object> {
   readonly automation = {
     get: (): Promise<A> => this.read().then(parts => parts.doc as A),
     set: (value: A, replace: true): Promise<void> => this.enqueue(async () => {
-      if (replace !== true) throw new SafeError('preferences', 'Écriture partielle non prise en charge.');
+      if (replace !== true) throw new SafeError('preferences', 'Partial writes are not supported.');
       await this.raw.set({ ...value, manual: this.manual }, true);
       ++this.writes; this.auto = value;
     }),
@@ -90,14 +90,14 @@ export class ManualConsent {
     } catch {
       if (revision === this.revision && !this.stopped) {
         this.record = { ...DEFAULT_MANUAL }; this.loaded = false;
-        this.problem = 'Accords manuels non lus : aucun envoi manuel tant qu’un nouvel accord explicite n’est pas enregistré.';
+        this.problem = 'Manual consents could not be read: no manual upload until a new explicit consent is saved.';
       }
     } finally { this.changed(); }
   }
   set(kind: ManualKind, value: boolean): Promise<void> {
-    if (this.stopped) return Promise.reject(new SafeError('stopped', 'Plugin arrêté.'));
+    if (this.stopped) return Promise.reject(new SafeError('stopped', 'Plugin stopped.'));
     const id = this.account();
-    if (!id) return Promise.reject(new SafeError('account', 'Compte actif inconnu : accord manuel impossible.'));
+    if (!id) return Promise.reject(new SafeError('account', 'Unknown active account: manual consent is not possible.'));
     const current = this.mode(); const grant = value === true;
     const next: ManualConsentRecord = {
       external: kind === 'external' ? grant : current.external,
@@ -114,8 +114,8 @@ export class ManualConsent {
       this.changed();
     }, () => {
       const message = grant
-        ? 'Accord non enregistré : rien n’est autorisé. Réessayez.'
-        : 'Retrait effectif pour cette session seulement : le disque peut conserver l’ancien accord au redémarrage. Réessayez le retrait avant de quitter.';
+        ? 'Consent not saved: nothing is authorized. Try again.'
+        : 'Withdrawal effective for this session only: the disk may keep the old consent after a restart. Retry the withdrawal before closing the app.';
       if (revision === this.revision) this.problem = message;
       this.changed();
       throw new SafeError('preferences', message);

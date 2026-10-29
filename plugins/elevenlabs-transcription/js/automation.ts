@@ -43,11 +43,11 @@ export class AutoPipeline {
   private readonly account: string;
   constructor(private readonly host: AutoHost, private readonly now: () => number = Date.now) {
     this.started = now(); this.account = host.accountId();
-    if (!/^\d{1,22}$/.test(this.account)) throw new SafeError('account', 'Compte actif inconnu.');
+    if (!/^\d{1,22}$/.test(this.account)) throw new SafeError('account', 'Unknown active account.');
   }
   configure(mode: AutoMode, consent: { externalProcessingAndCost: boolean; publishOwnReplies: boolean }) {
-    if ((mode.incoming || mode.ownReplies) && consent.externalProcessingAndCost !== true) throw new SafeError('consent', 'Accord de traitement externe/coût requis.');
-    if (mode.ownReplies && consent.publishOwnReplies !== true) throw new SafeError('consent', 'Accord de publication de vos réponses requis.');
+    if ((mode.incoming || mode.ownReplies) && consent.externalProcessingAndCost !== true) throw new SafeError('consent', 'Consent to external processing/cost required.');
+    if (mode.ownReplies && consent.publishOwnReplies !== true) throw new SafeError('consent', 'Consent to publish your own replies required.');
     this.invalidate(); this.started = this.now(); this.mode = { incoming: mode.incoming === true, ownReplies: mode.ownReplies === true };
   }
   accept(event: VoiceEvent): boolean {
@@ -88,14 +88,14 @@ export class AutoPipeline {
         this.attempts.push(this.now());
         const text = await this.host.transcribe(event.target, controller.signal);
         if (!this.valid(event, generation) || controller.signal.aborted) continue;
-        if (typeof text !== 'string' || !text.trim() || text.length > 100000) throw new SafeError('response', 'Transcription vide ou trop longue.');
+        if (typeof text !== 'string' || !text.trim() || text.length > 100000) throw new SafeError('response', 'Transcript empty or too long.');
         if (!own) this.host.showLocal(event.target, text);
         else {
           if (!this.host.canReply(event.target.channelId)) { this.host.report('permission'); continue; }
           // No silent truncation or multi-post bursts. Manual recovery retains full transcript.
           if (text.length > 1850) { this.host.showLocal(event.target, text); this.host.report('reply_too_long'); continue; }
           await this.host.sendReply(event.target.channelId, {
-            content: `Transcription automatique (peut contenir des erreurs) :\n${text}`,
+            content: `Transcript:\n${text}`,
             message_reference: { channel_id: event.target.channelId, message_id: event.target.messageId, fail_if_not_exists: true },
             allowed_mentions: { parse: [], replied_user: false },
           });

@@ -11,7 +11,7 @@ export class KeyState {
   get key() { return this.value; }
   private enqueue<T>(op: () => Promise<T>): Promise<T> {
     const next = this.tail.then(async () => {
-      if (this.stopped) throw new SafeError('stopped', 'Plugin arrêté.');
+      if (this.stopped) throw new SafeError('stopped', 'Plugin stopped.');
       return op();
     });
     this.tail = next.catch(() => {}); return next;

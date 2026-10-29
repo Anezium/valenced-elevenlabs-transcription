@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 export const tick = () => new Promise(resolve => setImmediate(resolve));
-export const ACTION_LABEL = 'Transcrire avec ElevenLabs';
+export const ACTION_LABEL = 'Transcribe with ElevenLabs';
 const source=readFileSync('plugins/elevenlabs-transcription/build/js/index.js','utf8');
 const element=(type,props={})=>({type,props});
 // Executes the real bundle. Every store, disk bridge, HTTP, STT endpoint, icon registry and the long-press

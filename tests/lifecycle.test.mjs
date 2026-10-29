@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 // Hôte synthétique : exécute le VRAI bundle, aucun runtime Android ni réseau.
 const source = readFileSync('plugins/elevenlabs-transcription/build/js/index.js', 'utf8');
 const tick = () => new Promise(r => setImmediate(r));
-const ACTION_LABEL = 'Transcrire avec ElevenLabs';
+const ACTION_LABEL = 'Transcribe with ElevenLabs';
 // Feuille d’appui long SYNTHÉTIQUE (un groupe éligible avec icônes + un groupe danger) : ce n’est PAS l’arbre
 // observé du client Discord. Elle prouve la politique d’insertion, pas la structure réelle sur appareil.
 function host({compatible=true, purge=true, missing=false, vaultMissing=false, sheet, icons={TranscriptOutlineIcon:function SyntheticTranscriptIcon(){}}, assets={}}={}) {
@@ -113,7 +113,7 @@ test('bundle cache non purgeable désactive transfert, puis reload propre',async
 });
 test('bundle coffre absent : échec sans faux état enregistré et sans trafic',async()=>{
  const h=host({vaultMissing:true});h.start();h.discover(h.mod);await tick();const rt=settingsRuntime(h);
- assert.equal(rt.key,'');assert.equal(rt.diagnostics.keySet,false);assert.match(rt.diagnostics.problem,/Coffre Android/);
+ assert.equal(rt.key,'');assert.equal(rt.diagnostics.keySet,false);assert.match(rt.diagnostics.problem,/Android vault/);
  await assert.rejects(rt.setKey('synthetic_key_fixture_000000'),{code:'vault'});assert.equal(rt.diagnostics.keySet,false);
  assert.equal(h.network,0);h.stop();await tick();
 });
@@ -132,23 +132,23 @@ test('menu synthétique : insertion en tête de l’unique groupe natif éligibl
  assert.equal(row.props.icon.type,'RowIcon');assert.equal(typeof row.props.icon.props.IconComponent,'function');assert.equal(row.props.variant,undefined);
  assert.deepEqual(rows.slice(1).map(r=>r.props.label),['synthetic-reply','synthetic-copy']);
  assert.equal(h.flat(groups[1].props.children).length,1);assert.equal(h.flat(tree.props.children).length,2);
- await tick();assert.match(settingsRuntime(h).diagnostics.placement,/Insérée/);assert.equal(h.network,0);h.stop();
+ await tick();assert.match(settingsRuntime(h).diagnostics.placement,/Inserted/);assert.equal(h.network,0);h.stop();
 });
 test('menu synthétique : refus explicite (vide, danger seul, ambigu, fragment, feuilles multiples, icône introuvable), jamais de groupe spéculatif',async()=>{
  const cases=[
-  {name:'empty',sheet:t=>t.element(t.ActionSheet,{children:[]}),pattern:/aucun groupe/},
-  {name:'danger-only',sheet:t=>t.element(t.ActionSheet,{children:[t.group('d',[t.row('x',{variant:'danger'})])]}),pattern:/éligible/},
-  {name:'no-icons',sheet:t=>t.element(t.ActionSheet,{children:[t.group('p',[t.row('a',{icon:undefined})])]}),pattern:/éligible/},
-  {name:'ambiguous',sheet:t=>t.element(t.ActionSheet,{children:[t.group('a',[t.row('a')]),t.group('b',[t.row('b')])]}),pattern:/plusieurs/},
-  {name:'fragment',sheet:t=>t.element(t.ActionSheet,{children:[t.group('f',[t.element('Fragment',{children:[t.row('a')]})])]}),pattern:/éligible/},
-  {name:'two-sheets',sheet:t=>t.element('View',{children:[t.element(t.ActionSheet,{children:[t.group('a',[t.row('a')])]}),t.element(t.ActionSheet,{children:[t.group('b',[t.row('b')])]})]}),pattern:/feuille/},
-  {name:'no-icon',icons:{},assets:{},pattern:/icône/},
+  {name:'empty',sheet:t=>t.element(t.ActionSheet,{children:[]}),pattern:/no visible native action group/},
+  {name:'danger-only',sheet:t=>t.element(t.ActionSheet,{children:[t.group('d',[t.row('x',{variant:'danger'})])]}),pattern:/no eligible/},
+  {name:'no-icons',sheet:t=>t.element(t.ActionSheet,{children:[t.group('p',[t.row('a',{icon:undefined})])]}),pattern:/no eligible/},
+  {name:'ambiguous',sheet:t=>t.element(t.ActionSheet,{children:[t.group('a',[t.row('a')]),t.group('b',[t.row('b')])]}),pattern:/several/},
+  {name:'fragment',sheet:t=>t.element(t.ActionSheet,{children:[t.group('f',[t.element('Fragment',{children:[t.row('a')]})])]}),pattern:/no eligible/},
+  {name:'two-sheets',sheet:t=>t.element('View',{children:[t.element(t.ActionSheet,{children:[t.group('a',[t.row('a')])]}),t.element(t.ActionSheet,{children:[t.group('b',[t.row('b')])]})]}),pattern:/native sheet/},
+  {name:'no-icon',icons:{},assets:{},pattern:/native icon/},
  ];
  for(const c of cases){
   const h=host(c);h.start();h.discover(h.mod);await tick();
   const tree=h.mod.default(h.voice);assert.equal(h.findRow(tree),undefined,c.name);
   assert.equal(h.collect(tree).length,h.collect(h.original(h.voice)).length,c.name); // tree untouched: no appended group
-  await tick();const d=settingsRuntime(h).diagnostics;assert.match(d.placement,/^Refusée/,c.name);assert.match(d.placement,c.pattern,c.name);
+  await tick();const d=settingsRuntime(h).diagnostics;assert.match(d.placement,/^Refused/,c.name);assert.match(d.placement,c.pattern,c.name);
   assert.equal(h.network,0);h.stop();
  }
 });

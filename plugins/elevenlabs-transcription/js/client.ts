@@ -73,7 +73,7 @@ export class ClientAutomation {
   private refresh(target: Target) {
     // Evidenced local rerender hook: does NOT change MessageRecord content or call Discord REST.
     const task = Promise.resolve().then(() => Dispatcher.dispatch({ type: 'MESSAGE_UPDATE', message: { id: target.messageId, channel_id: target.channelId } }))
-      .catch(() => this.notify('Rafraîchissement local indisponible.')).finally(() => this.refreshes.delete(task));
+      .catch(() => this.notify('Local refresh unavailable.')).finally(() => this.refreshes.delete(task));
     this.refreshes.add(task);
   }
   private showLocal(target: Target, text: string) {
@@ -98,18 +98,18 @@ export class ClientAutomation {
     } catch { return false; }
   }
   private async reply(channel: string, reply: Reply, manual = false) {
-    if (!this.ready() || !this.canReply(channel) || (!manual && !this.mode().ownReplies) || this.suspended || !this.connected) throw new SafeError('permission', 'Publication non autorisée.');
+    if (!this.ready() || !this.canReply(channel) || (!manual && !this.mode().ownReplies) || this.suspended || !this.connected) throw new SafeError('permission', 'Publishing not authorized.');
     const original = object(message(channel, reply.message_reference.message_id));
     if (!original || original.channel_id !== channel || original.author?.id !== account() || original.state !== 'SENT'
-      || reply.message_reference.channel_id !== channel || reply.content.length > 2000) throw new SafeError('reply', 'Vocal original indisponible.');
-    if (!extractTarget(original, { id: channel })) throw new SafeError('reply', 'Le message original n’est plus un vocal.');
+      || reply.message_reference.channel_id !== channel || reply.content.length > 2000) throw new SafeError('reply', 'Original voice message unavailable.');
+    if (!extractTarget(original, { id: channel })) throw new SafeError('reply', 'The original message is no longer a voice message.');
     const url = this.endpoints!.MESSAGES(channel);
-    if (url !== `/channels/${channel}/messages`) throw new SafeError('endpoint', 'Route Discord inattendue.');
+    if (url !== `/channels/${channel}/messages`) throw new SafeError('endpoint', 'Unexpected Discord route.');
     const result = await this.http!.post({ url, retries: 0, oldFormErrors: true, body: {
       ...reply, nonce: `stt${reply.message_reference.message_id}`, enforce_nonce: true, tts: false,
     } });
     const body = object(result?.body);
-    if (!body || !validId(body.id) || body.channel_id !== channel || (result.status !== undefined && (result.status < 200 || result.status >= 300))) throw new SafeError('reply', 'Envoi incertain : aucune nouvelle tentative automatique.');
+    if (!body || !validId(body.id) || body.channel_id !== channel || (result.status !== undefined && (result.status < 200 || result.status >= 300))) throw new SafeError('reply', 'Reply delivery uncertain: no automatic retry.');
   }
   private ensurePipeline() {
     const id = account();
@@ -121,13 +121,13 @@ export class ClientAutomation {
         canReply: channel => this.canReply(channel), reserve: reserveAutomaticIdentity,
         transcribe: async (target, signal) => {
           throwIfAborted(signal);
-          if (!this.rt.alive || !this.rt.diagnostics.compatible || !this.rt.diagnostics.ready || !this.rt.key) throw new SafeError('key', 'Clé ou cache indisponible.');
+          if (!this.rt.alive || !this.rt.diagnostics.compatible || !this.rt.diagnostics.ready || !this.rt.key) throw new SafeError('key', 'Key or cache unavailable.');
           const cancel = () => this.rt.engine.cancel(target); signal.addEventListener('abort', cancel, { once: true });
           try { return await this.rt.engine.run(target, this.rt.key, true); }
           finally { signal.removeEventListener('abort', cancel); }
         },
         showLocal: (target, text) => this.showLocal(target, text), sendReply: (channel, body) => this.reply(channel, body),
-        clearLocal: () => this.clearLocal(), report: code => this.notify(`Automatisation : ${code}. Reprise manuelle si nécessaire.`),
+        clearLocal: () => this.clearLocal(), report: code => this.notify(`Automation: ${code}. Retry manually if needed.`),
       });
       this.pipeline.configure(this.mode(), { externalProcessingAndCost: this.settings.external, publishOwnReplies: this.settings.publish });
       if (this.suspended || !this.connected) this.pipeline.pause();
@@ -151,7 +151,7 @@ export class ClientAutomation {
       const target = extractTarget(record, channel); if (!target) return;
       const own = record.author.id === account();
       this.ensurePipeline()?.accept({ kind: own ? 'ack' : 'create', target, authorId: record.author.id, accountId: account(), live: true, sent: own });
-    } catch { this.notify('Événement vocal incompatible : aucun transfert.'); }
+    } catch { this.notify('Incompatible voice event: no transfer.'); }
   }
   configure(mode: AutoMode) {
     // Snapshot caller input. Revocation is synchronous and monotonic until a NEW
@@ -168,15 +168,15 @@ export class ClientAutomation {
     };
     this.pipeline?.configure(this.mode(), { externalProcessingAndCost: this.settings.external, publishOwnReplies: this.settings.publish });
     const revision = ++this.revision;
-    this.notify('Accords en cours d’enregistrement ; retraits déjà effectifs pour cette session.');
+    this.notify('Consents are being saved; withdrawals are already effective for this session.');
     const operation = this.writes.then(async () => {
-      if (this.stopped) throw new SafeError('stopped', 'Plugin arrêté.');
-      if ((mode.incoming || mode.ownReplies) && !this.ready()) throw new SafeError('hooks', 'Modules automatiques indisponibles ou ambigus.');
+      if (this.stopped) throw new SafeError('stopped', 'Plugin stopped.');
+      if ((mode.incoming || mode.ownReplies) && !this.ready()) throw new SafeError('hooks', 'Automatic modules unavailable or ambiguous.');
       const id = account(); const value: AutoPreferences = { incoming: mode.incoming === true, ownReplies: mode.ownReplies === true,
         external: mode.incoming === true || mode.ownReplies === true, publish: mode.ownReplies === true, accountId: id };
       try { await this.preferences.set(value, true); }
       catch {
-        const problem = 'Accords non enregistrés : retraits maintenus pour cette session seulement. Le disque peut conserver les anciens accords au redémarrage ; réessayez la désactivation avant de quitter.';
+        const problem = 'Consents not saved: withdrawals kept for this session only. The disk may keep the old consents after a restart; turn it off again before closing the app.';
         if (revision === this.revision) this.notify(problem);
         throw new SafeError('preferences', problem);
       }
@@ -211,7 +211,7 @@ export class ClientAutomation {
         const row = Reflect.apply(original, this, args) as Row;
         if (row?.type !== 1 || !row.message) return row;
         if (!validId(row.message.id) || (row.message.content !== undefined && !Array.isArray(row.message.content))) {
-          adapter.rowReady = false; adapter.pipeline?.pause(); adapter.notify('Rendu natif incompatible : automatisation suspendue.'); return row;
+          adapter.rowReady = false; adapter.pipeline?.pause(); adapter.notify('Incompatible native rendering: automation suspended.'); return row;
         }
         const entry = adapter.local.get(row.message.id);
         if (!entry && !adapter.changed.has(row.message.id)) return row;
@@ -219,7 +219,7 @@ export class ClientAutomation {
         if (record?.id !== row.message.id || record?.channel_id !== (entry?.target.channelId ?? channelId())) return row;
         const changed = adapter.changed.delete(row.message.id);
         return { ...row, ...(changed ? { changeType: 2 } : {}), message: { ...row.message,
-          content: entry ? [...(row.message.content ?? []), { type: 'text', content: `\nTranscription locale (ElevenLabs, peut contenir des erreurs) :\n${entry.text}` }] : row.message.content,
+          content: entry ? [...(row.message.content ?? []), { type: 'text', content: `\nLocal transcript (ElevenLabs, may contain errors):\n${entry.text}` }] : row.message.content,
         } };
       });
       this.rowReady = true;
@@ -233,7 +233,7 @@ export class ClientAutomation {
       const mode = this.mode();
       if (this.stopped || this.suspended || !this.connected || !this.ready() || !this.rt.key || (!mode.incoming && !mode.ownReplies)) return;
       const ingress = this.ingress, dispatchedAccount = account();
-      void Promise.resolve().then(() => this.event(payload, ingress, dispatchedAccount)).catch(() => this.notify('Événement incompatible.'));
+      void Promise.resolve().then(() => this.event(payload, ingress, dispatchedAccount)).catch(() => this.notify('Incompatible event.'));
     });
     for (const type of ['CONNECTION_CLOSED', 'CONNECTION_INTERRUPTED', 'LOGOUT']) subscribe(type, () => { ++this.ingress; this.connected = false; this.pipeline?.pause(); this.notify(); });
     for (const type of ['CONNECTION_OPEN', 'CONNECTION_RESUMED']) subscribe(type, () => { ++this.ingress; this.connected = true; this.ensurePipeline()?.resume(); this.notify(); });
@@ -250,7 +250,7 @@ export class ClientAutomation {
       this.settings = { incoming: value?.incoming === true, ownReplies: value?.ownReplies === true,
         external: value?.external === true, publish: value?.publish === true, accountId: validId(value?.accountId) ? value.accountId : '' };
       this.loaded = true; this.notify();
-    }).catch(() => this.notify('Accords non chargés : automatisation désactivée.'));
+    }).catch(() => this.notify('Consents not loaded: automation disabled.'));
   }
   pause() { ++this.ingress; this.suspended = true; this.pipeline?.pause(); }
   resume() { ++this.ingress; this.suspended = false; if (this.connected) this.ensurePipeline()?.resume(); this.notify(); }
@@ -260,9 +260,9 @@ export class ClientAutomation {
     catch { return false; }
   }
   async replyManually(target: Target, text: string, confirmed: boolean) {
-    if (confirmed !== true) throw new SafeError('consent', 'Accord explicite de publication requis.');
-    if (!text.trim() || text.length > 1850 || this.rt.engine.cached(target) !== text) throw new SafeError('reply', 'Transcription locale absente ou trop longue pour une réponse.');
-    await this.reply(target.channelId, { content: `Transcription automatique (peut contenir des erreurs) :\n${text}`,
+    if (confirmed !== true) throw new SafeError('consent', 'Explicit consent to publish required.');
+    if (!text.trim() || text.length > 1850 || this.rt.engine.cached(target) !== text) throw new SafeError('reply', 'Local transcript missing or too long for a reply.');
+    await this.reply(target.channelId, { content: `Transcript:\n${text}`,
       message_reference: { channel_id: target.channelId, message_id: target.messageId, fail_if_not_exists: true },
       allowed_mentions: { parse: [], replied_user: false },
     }, true);
