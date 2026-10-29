@@ -1,11 +1,11 @@
 {
   "name": "Anezium — ElevenLabs Transcription (experimental)",
-  "description": "Version 0.2.1: Android vault and opt-in automation. Android and the real API are not validated; costs possible.",
+  "description": "ElevenLabs voice-message transcription for Valenced. Not yet verified on a physical Android device; ElevenLabs costs possible.",
   "channels": {
     "anezium.elevenlabs-transcription": {
-      "latest": "0.2.1",
-      "beta": "0.2.1",
-      "testing": "0.2.1",
+      "latest": "0.2.2",
+      "beta": "0.2.2",
+      "testing": "0.2.2",
       "legacy": "0.1.0"
     }
   }

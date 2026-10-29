@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { zipSync, unzipSync } from 'fflate';
 const root = 'plugins/elevenlabs-transcription';
 const manifest = JSON.parse(readFileSync(`${root}/manifest.json`, 'utf8'));
-assert.equal(manifest.version, '0.2.1');
+assert.equal(manifest.version, '0.2.2');
 assert.equal(manifest.dist.android.class, 'app.anezium.elevenlabs.ElevenLabsPlugin');
 const native = readFileSync(`${root}/build/android/elevenlabs.jar`);
 const jar = unzipSync(native);

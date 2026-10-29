@@ -27,6 +27,7 @@ import { REFUSAL_MESSAGES, flattenChildren, planInsertion } from './menu.js';
 
 const SHEET_KEY = 'anezium-elevenlabs-transcription';
 const ACTION_LABEL = 'Transcribe with ElevenLabs';
+const PLUGIN_VERSION = '0.2.2';
 // Nom d’asset que le host Valenced d3e17fe utilise lui-même (HermesVersionSetting). Sa présence dans le
 // client 352.6 installé reste à vérifier sur appareil : résolution via API host, refus fermé sinon.
 const ICON_ASSET = 'TranscriptOutlineIcon';
@@ -43,6 +44,7 @@ interface Diagnostics {
   compatible: boolean; ready: boolean; candidates: number; menu: boolean; problem: string; keySet: boolean; last: string;
   autoReady: boolean; incoming: boolean; ownReplies: boolean; autoProblem: string;
   placement: string; manualExternal: boolean; manualPublish: boolean;
+  autoStatus: string; uiError: string; uiErrorAt: '' | 'key' | 'manual' | 'auto'; openAuto: boolean; openStatus: boolean; openPrivacy: boolean;
 }
 function currentAccount(): string {
   try {
@@ -60,6 +62,7 @@ class Runtime {
     compatible: false, ready: false, candidates: 0, menu: false, problem: '', keySet: false, last: 'No transfer yet',
     autoReady: false, incoming: false, ownReplies: false, autoProblem: '',
     placement: 'No voice message menu opened yet.', manualExternal: false, manualPublish: false,
+    autoStatus: '', uiError: '', uiErrorAt: '', openAuto: false, openStatus: false, openPrivacy: false,
   };
   auto?: ClientAutomation;
   engine: Transcriber;
@@ -103,9 +106,12 @@ class Runtime {
   /** Mise à jour différée depuis un rendu (patch du menu) : évite un setState pendant le rendu d’un autre composant. */
   defer(update: Partial<Diagnostics>) { void Promise.resolve().then(() => { if (this.alive) this.update(update); }); }
   pause() { this.auto?.pause(); this.keys.suspend(); this.engine.cancelAll(); this.engine.clearResults(); }
-  async forget() { this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.delete(); this.update({ last: 'Key deleted from the vault' }); }
+  async forget() { this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.delete(); this.update({ last: 'Key removed' }); }
   async setKey(value: string) { if (!this.alive) throw new SafeError('stopped', 'Plugin stopped.'); this.auto?.invalidate(); this.engine.cancelAll(); this.engine.clearResults(); await this.keys.save(value); }
-  notifyAuto(autoReady: boolean, mode: AutoMode, autoProblem?: string) { this.update({ autoReady, incoming: mode.incoming, ownReplies: mode.ownReplies, ...(autoProblem !== undefined ? { autoProblem } : {}) }); }
+  notifyAuto(autoReady: boolean, mode: AutoMode, autoProblem?: string, autoStatus?: string) { this.update({ autoReady, incoming: mode.incoming, ownReplies: mode.ownReplies, autoStatus: autoStatus ?? '', ...(autoProblem !== undefined ? { autoProblem } : {}) }); }
+  /** Error shown in the status banner and inline under the section that raised it; a section only clears its own error. */
+  setUiError(uiError: string, at: 'key' | 'manual' | 'auto') { if (!uiError) { if (this.diagnostics.uiErrorAt === at) this.update({ uiError: '', uiErrorAt: '' }); } else if (this.alive) this.update({ uiError, uiErrorAt: at }); }
+  toggle(section: 'openAuto' | 'openStatus' | 'openPrivacy') { this.update({ [section]: !this.diagnostics[section] }); }
 }
 let runtime: Runtime | undefined;
 function useRuntime(rt: Runtime | undefined) {
@@ -120,7 +126,7 @@ function useRuntime(rt: Runtime | undefined) {
 function Note({ children, tone = 'muted', alert = false }: { children: ReactNode; tone?: 'muted' | 'default' | 'critical' | 'warning'; alert?: boolean }) {
   const { Text } = Design;
   const color = tone === 'critical' ? 'text-feedback-critical' : tone === 'warning' ? 'text-feedback-warning' : tone === 'default' ? 'text-default' : 'text-muted';
-  return <Text accessibilityRole={alert ? 'alert' : undefined} selectable={alert} variant={alert ? 'text-sm/medium' : 'text-sm/normal'} color={color}>{children}</Text>;
+  return <Text accessibilityRole={alert ? 'alert' : undefined} accessibilityLiveRegion={alert ? 'assertive' : undefined} selectable={alert} variant={alert ? 'text-sm/medium' : 'text-sm/normal'} color={color}>{children}</Text>;
 }
 function KeyEditor({ rt, onDone, onCancel }: { rt: Runtime; onDone?(): void; onCancel?(): void }) {
   const [entry, setEntry] = useState(''); const [error, setError] = useState(''); const [saving, setSaving] = useState(false);
@@ -131,7 +137,7 @@ function KeyEditor({ rt, onDone, onCancel }: { rt: Runtime; onDone?(): void; onC
     });
     return () => subscription.remove();
   }, [rt]);
-  const { Button, Stack } = Design;
+  const { Button, Card, Stack } = Design;
   const save = () => {
     const value = entry; setEntry(''); setError(''); setSaving(true);
     void rt.setKey(value).then(() => {
@@ -141,91 +147,133 @@ function KeyEditor({ rt, onDone, onCancel }: { rt: Runtime; onDone?(): void; onC
     }).catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setSaving(false); });
   };
   return <Stack spacing={8}>
-    <Note>Key encrypted by Android Keystore, excluded from backups, and reused after returning to the foreground and after a restart. Format checked locally only: no validation with ElevenLabs, and no transfer without the native bridge.</Note>
-    <TextInput accessibilityLabel="ElevenLabs API key (hidden)" placeholder="ElevenLabs key" placeholderTextColor="#adb2c4" value={entry} onChangeText={setEntry} secureTextEntry autoCorrect={false} autoCapitalize="none" autoComplete="off" textContentType="none" importantForAutofill="no" contextMenuHidden style={secretInputStyle} editable={rt.alive && !saving} />
-    <Button text={d.keySet ? 'Replace the secured key' : 'Save the secured key'} variant="primary" loading={saving} disabled={!entry.trim() || !rt.alive || saving} onPress={save} />
+    <Note>Stored encrypted on this device and excluded from backups.</Note>
+    <Card><TextInput accessibilityLabel="API key (hidden)" placeholder="API key" placeholderTextColor="#adb2c4" value={entry} onChangeText={setEntry} secureTextEntry autoCorrect={false} autoCapitalize="none" autoComplete="off" textContentType="none" importantForAutofill="no" contextMenuHidden style={secretInputStyle} editable={rt.alive && !saving} /></Card>
+    <Button text={d.keySet ? 'Replace key' : 'Save key'} variant="primary" loading={saving} disabled={!entry.trim() || !rt.alive || saving} onPress={save} />
     {onCancel && <Button text="Cancel" variant="tertiary" disabled={saving} onPress={() => { setEntry(''); setError(''); onCancel(); }} />}
     {!!error && <Note tone="critical" alert>{error}</Note>}
   </Stack>;
 }
+/** Computed one-line state at the top of the screen: replaces the former intro paragraph and surfaces unsupported builds. */
+function StatusSection({ rt }: { rt: Runtime }) {
+  const d = useRuntime(rt)!;
+  const manual = rt.consent.mode();
+  let tone: 'default' | 'critical' = 'default'; let text: string;
+  if (!d.compatible) { tone = 'critical'; text = 'Not available on this Discord build. See Status and about for details.'; }
+  else if (d.problem) { tone = 'critical'; text = d.problem; }
+  else if (!d.keySet) text = 'Step 1: add your API key.';
+  else if (!manual.external) text = 'Step 2: turn on Send audio to ElevenLabs.';
+  else text = `Ready. Long-press a voice message, then choose ${ACTION_LABEL}.`;
+  const errors = [d.uiError, rt.consent.problem, d.autoProblem].filter((value, index, all) => !!value && all.indexOf(value) === index);
+  const { Stack } = Design;
+  return <Stack spacing={8}>
+    <Note tone={tone} alert={tone === 'critical'}>{text}</Note>
+    {errors.map(message => <Note key={message} tone="critical" alert>{message}</Note>)}
+  </Stack>;
+}
 function KeySection({ rt }: { rt: Runtime }) {
-  const d = useRuntime(rt)!; const [editing, setEditing] = useState(false); const [deleting, setDeleting] = useState(false); const [error, setError] = useState('');
+  const d = useRuntime(rt)!; const [editing, setEditing] = useState(false); const [deleting, setDeleting] = useState(false);
   const { TableRowGroup, TableRow } = Design;
   const vaultProblem = d.problem.startsWith('Android vault') ? d.problem : '';
   return <>
-    <TableRowGroup title="ElevenLabs API key" description={d.keySet ? 'Format checked locally. Not yet validated against ElevenLabs or a real Android vault (device test needed).' : undefined}>
-      <TableRow label="Secured key" subLabel={d.keySet ? 'Present in memory, encrypted by Android Keystore.' : vaultProblem || 'No key in memory.'} />
-      {!editing && <TableRow label={d.keySet ? 'Replace the key' : 'Save a key'} arrow disabled={!rt.alive} onPress={() => { setError(''); setEditing(true); }} />}
-      <TableRow label="Delete the key and results" subLabel={deleting ? 'Deleting from the vault…' : 'Cancels transfers. Try again here if the deletion fails, even without a key in memory.'} variant="danger" disabled={deleting || !rt.alive} onPress={() => {
-        setDeleting(true); setError('');
-        void rt.forget().catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setDeleting(false); });
+    <TableRowGroup title="API key">
+      <TableRow label="API key" subLabel={vaultProblem || (d.keySet ? 'Saved' : 'Not set')} />
+      {!editing && <TableRow label={d.keySet ? 'Replace key' : 'Add key'} arrow disabled={!rt.alive} onPress={() => { rt.setUiError('', 'key'); setEditing(true); }} />}
+      <TableRow label="Remove key" subLabel={deleting ? 'Removing…' : undefined} variant="danger" disabled={deleting || !rt.alive} onPress={() => {
+        setDeleting(true); rt.setUiError('', 'key');
+        void rt.forget().catch(e => { if (rt.alive) rt.setUiError(safeMessage(e), 'key'); }).finally(() => { if (rt.alive) setDeleting(false); });
       }} />
     </TableRowGroup>
     {editing && <KeyEditor rt={rt} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />}
-    {!!error && <Note tone="critical" alert>{error}</Note>}
   </>;
 }
 function ManualSection({ rt }: { rt: Runtime }) {
-  useRuntime(rt); const [busy, setBusy] = useState<ManualKind | ''>(''); const [error, setError] = useState('');
+  const d = useRuntime(rt)!; const [busy, setBusy] = useState<ManualKind | ''>('');
   const mode = rt.consent.mode();
   const toggle = (kind: ManualKind, value: boolean) => {
     if (busy) return;
-    setBusy(kind); setError('');
-    void rt.consent.set(kind, value).catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setBusy(''); });
+    setBusy(kind); rt.setUiError('', 'manual');
+    void rt.consent.set(kind, value).catch(e => { if (rt.alive) rt.setUiError(safeMessage(e), 'manual'); }).finally(() => { if (rt.alive) setBusy(''); });
   };
   const { TableRowGroup, TableSwitchRow } = Design;
-  return <>
-    <TableRowGroup title="Manual transcription" description="Triggered only by long-pressing a voice message, then “Transcribe”. No history is analyzed and nothing is triggered automatically.">
-      <TableSwitchRow label="Allow sending to ElevenLabs" subLabel="External service; cost possible and retention depends on your plan. After this consent, “Transcribe” is enough, with no per-message confirmation." accessibilityHint="Persistent consent tied to this account, revocable at any time" value={mode.external} disabled={!rt.alive || !!busy} onValueChange={value => toggle('external', value)} />
-      <TableSwitchRow label="Publish my transcripts" subLabel="“Publish” posts the text of your own voice message as a reply in its channel. Never other people’s voice messages, and never without pressing “Publish”." accessibilityHint="Requires the sending consent; revocable at any time" value={mode.publish} disabled={!rt.alive || !!busy || !mode.external} onValueChange={value => toggle('publish', value)} />
-    </TableRowGroup>
-    {(!!error || !!rt.consent.problem) && <Note tone="critical" alert>{error || rt.consent.problem}</Note>}
+  const inline = [rt.consent.problem, d.uiErrorAt === 'manual' ? d.uiError : ''].filter((value, index, all) => !!value && all.indexOf(value) === index);
+  return <><TableRowGroup title="Manual transcription" description="Long-press a voice message to start. Nothing runs on its own.">
+    <TableSwitchRow label="Send audio to ElevenLabs" subLabel="Required to transcribe. ElevenLabs is an external service: cost possible, retention depends on your plan. You can turn this off at any time." accessibilityHint="Persistent consent tied to this account, revocable at any time" value={mode.external} disabled={!rt.alive || !!busy} onValueChange={value => toggle('external', value)} />
+    <TableSwitchRow label="Publish my transcripts" subLabel={mode.external ? 'Adds a Publish button for your own voice messages. Never other people’s voice messages.' : 'Turn on sending first.'} accessibilityHint="Requires the sending consent; revocable at any time" value={mode.publish} disabled={!rt.alive || !!busy || !mode.external} onValueChange={value => toggle('publish', value)} />
+  </TableRowGroup>
+    {inline.map(message => <Note key={message} tone="critical">{message}</Note>)}
   </>;
 }
 function AutomaticSection({ rt }: { rt: Runtime }) {
-  const d = useRuntime(rt)!; const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  const d = useRuntime(rt)!; const [busy, setBusy] = useState(false);
   const configure = (mode: AutoMode) => {
     if (!rt.auto || busy) return;
-    setBusy(true); setError('');
-    void rt.auto.configure(mode).catch(e => { if (rt.alive) setError(safeMessage(e)); }).finally(() => { if (rt.alive) setBusy(false); });
+    setBusy(true); rt.setUiError('', 'auto');
+    void rt.auto.configure(mode).catch(e => { if (rt.alive) rt.setUiError(safeMessage(e), 'auto'); }).finally(() => { if (rt.alive) setBusy(false); });
   };
   const canEnable = d.autoReady && d.keySet;
+  const reason = !d.keySet ? 'Add an API key first.' : !d.autoReady ? 'Unavailable on this build.' : '';
+  // The collapsed summary ALWAYS states the current mode, so a switch that is on is never hidden.
+  const state = d.incoming || d.ownReplies
+    ? `On: ${d.incoming && d.ownReplies ? 'others’ messages and mine' : d.incoming ? 'others’ messages' : 'my messages'}`
+    : d.autoReady ? 'Off' : 'Unavailable on this build';
   const { TableRowGroup, TableSwitchRow, TableRow } = Design;
   return <>
-    <TableRowGroup title="Automatic — off by default" description={d.autoReady ? 'Open chat only, new voice messages only, no history and no catch-up. Device validation still required.' : 'Automatic modules missing or ambiguous: activation refused.'}>
-      <TableSwitchRow label="Others’ voice messages: transcribe and show locally" subLabel="Every new voice message in the open chat is sent to ElevenLabs (cost). Enable only with the permission of the people concerned. Nothing is published." value={d.incoming} disabled={busy || (!d.incoming && !canEnable)} onValueChange={value => configure({ incoming: value, ownReplies: d.ownReplies })} />
-      <TableSwitchRow label="My voice messages: publish the transcript as a reply" subLabel="After a successful send, the text is published in the original channel, visible to its members. Each voice message incurs a cost." value={d.ownReplies} disabled={busy || (!d.ownReplies && !canEnable)} onValueChange={value => configure({ incoming: d.incoming, ownReplies: value })} />
-      {(d.incoming || d.ownReplies) && <TableRow label="Turn off all automation" subLabel="Withdrawn immediately for this session, then saved." variant="danger" disabled={busy} onPress={() => configure({ incoming: false, ownReplies: false })} />}
+    <TableRowGroup>
+      <TableRow label="Automatic transcription" subLabel={state} arrow onPress={() => rt.toggle('openAuto')} />
     </TableRowGroup>
-    {(!!error || !!d.autoProblem) && <Note tone="critical" alert>{error || d.autoProblem}</Note>}
+    {d.openAuto && <TableRowGroup description="New voice messages in the open chat only. Each one is sent to ElevenLabs: cost possible.">
+      <TableSwitchRow label="Transcribe others’ messages" subLabel={!d.incoming && !canEnable ? reason : 'Shown only to you. Ask the senders first.'} value={d.incoming} disabled={busy || (!d.incoming && !canEnable)} onValueChange={value => configure({ incoming: value, ownReplies: d.ownReplies })} />
+      <TableSwitchRow label="Auto-publish my transcripts" subLabel={!d.ownReplies && !canEnable ? reason : 'Posts a reply after each of your voice messages, visible to the channel’s members.'} value={d.ownReplies} disabled={busy || (!d.ownReplies && !canEnable)} onValueChange={value => configure({ incoming: d.incoming, ownReplies: value })} />
+      {(d.incoming || d.ownReplies) && <TableRow label="Turn off all automation" variant="danger" disabled={busy} onPress={() => configure({ incoming: false, ownReplies: false })} />}
+    </TableRowGroup>}
+    {!!d.autoStatus && <Note>{d.autoStatus}</Note>}
+    {d.openAuto && [d.autoProblem, d.uiErrorAt === 'auto' ? d.uiError : ''].filter((value, index, all) => !!value && all.indexOf(value) === index).map(message => <Note key={message} tone="critical">{message}</Note>)}
   </>;
 }
-function DetailsSection({ rt }: { rt: Runtime }) {
-  const d = useRuntime(rt)!; const [open, setOpen] = useState(false);
+function StatusAboutSection({ rt }: { rt: Runtime }) {
+  const d = useRuntime(rt)!;
   const { TableRowGroup, TableRow, Stack } = Design;
+  const menu = d.placement.startsWith('Inserted') ? 'Available' : d.placement.startsWith('Refused') ? 'Not available on this build' : 'Not checked yet';
+  const consents = [d.manualExternal ? 'Sending' : '', d.manualPublish ? 'Publishing' : ''].filter(Boolean).join(', ') || 'None';
   return <>
-    <TableRowGroup title="Details">
-      <TableRow label="Long-press menu action" subLabel={d.placement} />
-      <TableRow label={open ? 'Hide diagnostics and limits' : 'Diagnostics, limits and license'} arrow onPress={() => setOpen(!open)} />
+    <TableRowGroup>
+      <TableRow label="Status and about" arrow onPress={() => rt.toggle('openStatus')} />
     </TableRowGroup>
-    {open && <Stack spacing={8}>
-      <Note>{`Diagnostics (no IDs or secrets):\nSupported client: ${d.compatible ? 'yes' : 'no'}\nCache ready: ${d.ready ? 'yes' : 'no'}\nMenu modules found: ${d.candidates}\nMenu patch: ${d.menu ? 'active' : 'inactive'}\n${d.problem || 'No problem detected'}\nLast step: ${d.last}\nEffective manual consents: sending ${d.manualExternal ? 'yes' : 'no'}, publishing ${d.manualPublish ? 'yes' : 'no'}`}</Note>
-      <Note>Menu policy: insert only into the single eligible native group (non-destructive rows with icons), with an icon resolved by the host; otherwise explicit refusal, never a separate group. Actual structure of client 352.6 not observed: device verification required.</Note>
-      <Note>Limits: 8 MiB / 5 minutes. Audio is sent to the third-party service ElevenLabs; cost possible and retention depends on your plan. A local result does not mean local processing. The transport checks initial/final URLs and sizes on a best-effort basis, without guaranteeing that HTTP redirects are blocked beforehand or a strict native memory cap. Phone and real API tests not performed.</Note>
-      <Note>The vault protects the file at rest, not against other plugins in the same process. The key is held in JS memory during the transfer. Transcripts are cleared when the app goes to the background; the clipboard remains managed by Android. If a consent withdrawal fails to persist to disk, it stays effective for the session only.</Note>
-      <Note>Copyright 2026 Anezium and Valenced contributors. Free software under GPL-3.0, without warranty. Sources, license and redistribution: github.com/Anezium/valenced-elevenlabs-transcription. Version 0.2.1.</Note>
-    </Stack>}
+    {d.openStatus && <>
+      <TableRowGroup title="Status">
+        <TableRow label="Discord build" subLabel={d.compatible ? 'Supported' : 'Not supported'} />
+        <TableRow label="Menu action" subLabel={menu} />
+        <TableRow label="Menu details" subLabel={d.placement} />
+        <TableRow label="Cache" subLabel={d.ready ? 'Ready' : 'Not ready'} />
+        <TableRow label="Last activity" subLabel={d.last} />
+        <TableRow label="Consents in effect" subLabel={consents} />
+        <TableRow label="Problem" subLabel={d.problem || 'None'} />
+        <TableRow label="Verification" subLabel="Not yet verified on a device" />
+      </TableRowGroup>
+      <TableRowGroup title="About">
+        <TableRow label="Limits" subLabel="8 MiB, 5 min" />
+        <TableRow label="Privacy and security" arrow onPress={() => rt.toggle('openPrivacy')} />
+        <TableRow label="Version" subLabel={`${PLUGIN_VERSION}, GPL-3.0, github.com/Anezium/valenced-elevenlabs-transcription`} />
+      </TableRowGroup>
+      {d.openPrivacy && <Stack spacing={8}>
+        <Note>Your key is encrypted by Android Keystore and excluded from backups. The vault protects it at rest, not against other plugins in the same process.</Note>
+        <Note>Transcripts stay in memory and are cleared when the app goes to the background.</Note>
+        <Note>Audio is processed by ElevenLabs, not on this device. Cost and retention depend on your plan.</Note>
+      </Stack>}
+    </>}
   </>;
 }
 export function SettingsComponent() {
   const rt = runtime; useRuntime(rt);
   const { Stack } = Design;
   return <Page spacing={0}><ScrollView keyboardShouldPersistTaps="handled"><Stack spacing={16} style={{ padding: 16, paddingBottom: 32 }}>
-    <Note tone="default">{!rt ? 'Enable the plugin to get started.' : `Long-press a voice message → “${ACTION_LABEL}”. Manual transcription only when you trigger it; automatic only after you enable it below. Key and consent required.`}</Note>
+    {!rt && <Note tone="default">Enable the plugin to get started.</Note>}
+    {rt && <StatusSection rt={rt} />}
     {rt && <KeySection rt={rt} />}
     {rt && <ManualSection rt={rt} />}
     {rt && <AutomaticSection rt={rt} />}
-    {rt && <DetailsSection rt={rt} />}
+    {rt && <StatusAboutSection rt={rt} />}
   </Stack></ScrollView></Page>;
 }
 function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: Target; initialError?: string }) {
@@ -274,13 +322,14 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
             <KeyEditor rt={rt} />
           </>}
           {d?.keySet && !manual.external && <>
-            <Note tone="default">Allow once: the audio of the voice messages you choose is sent to ElevenLabs (Scribe v2), an external service that may be paid, with retention depending on your plan. After that, “Transcribe” is enough, with no further confirmation. Nothing is published without a separate action. Reversible in the plugin settings.</Note>
-            <Button text="I allow sending the voice messages I choose to ElevenLabs" variant="primary" loading={granting === 'external'} disabled={!rt.alive || !!granting} onPress={() => grant('external')} />
+            <Note tone="default">Allow once: the audio of the voice messages you choose is sent to ElevenLabs (Scribe v2), an external service that may be paid, with retention depending on your plan. After that, the Transcribe button is enough, with no further confirmation. Nothing is published without a separate action. Reversible in the plugin settings.</Note>
+            <Button text="Allow sending to ElevenLabs" variant="primary" loading={granting === 'external'} disabled={!rt.alive || !!granting} onPress={() => grant('external')} />
           </>}
           {d?.keySet && manual.external && <>
             <Note>Result shown here only. Only transcribe other people’s voice messages if you are allowed to share them with this provider.</Note>
             {target && rt.engine.wasAttempted(target) && <Note tone="warning" alert>An upload was already attempted for this voice message: retrying may be billed a second time, even without a result.</Note>}
-            <Button text={error ? 'Retry (cost possible)' : 'Transcribe (cost possible)'} variant="primary" disabled={!enabled} onPress={() => { void run(); }} />
+            <Note>This sends the audio of this voice message to ElevenLabs. Cost possible.</Note>
+            <Button text={error ? 'Retry' : 'Transcribe'} variant="primary" disabled={!enabled} onPress={() => { void run(); }} />
           </>}
         </>}
         {busy && <>
@@ -294,12 +343,12 @@ function TranscriptSheet({ rt, target, initialError }: { rt: Runtime; target?: T
           <Button text={copied ? 'Copied to the Android clipboard' : 'Copy the text'} variant="secondary" disabled={!rt.alive || !d?.keySet} onPress={() => { try { Clipboard.setString(text); setCopied(true); } catch { setError('Clipboard unavailable. You can select the text instead.'); } }} />
           {own && <Note>After an uncertain send, check the channel before publishing again: a duplicate is possible. No automatic resend.</Note>}
           {own && (manual.publish
-            ? <Button text={published ? 'Reply published' : 'Publish as a reply to my voice message'} variant="primary" loading={publishing} disabled={publishing || published || !rt.alive || !d?.keySet} onPress={publish} />
+            ? <Button text={published ? 'Reply published' : 'Publish as reply'} variant="primary" loading={publishing} disabled={publishing || published || !rt.alive || !d?.keySet} onPress={publish} />
             : <>
               <Note>To publish the text of your own voice messages as a reply in their channel, allow it once. Never other people’s voice messages. After an uncertain send, there is no automatic resend: a duplicate remains possible.</Note>
-              <Button text="I allow publishing my transcripts" variant="secondary" loading={granting === 'publish'} disabled={!rt.alive || !!granting} onPress={() => grant('publish')} />
+              <Button text="Allow publishing my transcripts" variant="secondary" loading={granting === 'publish'} disabled={!rt.alive || !!granting} onPress={() => grant('publish')} />
             </>)}
-          <Button text="Clear local transcripts" variant="tertiary" onPress={() => { rt.auto?.invalidate(); rt.engine.clearResults(); setText(''); setCopied(false); setPublished(false); }} />
+          <Button text="Clear local transcripts" size="sm" variant="tertiary" onPress={() => { rt.auto?.invalidate(); rt.engine.clearResults(); setText(''); setCopied(false); setPublished(false); }} />
         </>}
         <Button text={busy ? 'Close (cancels the upload)' : 'Close'} variant="tertiary" onPress={close} />
       </Stack>
@@ -388,7 +437,7 @@ export default plugin<{ jsonStorage: Document }>({
             const icon = resolveIcon(rt);
             if (!icon) { rt.defer({ placement: `Refused: native icon “${ICON_ASSET}” not found via the host; nothing inserted without an icon.` }); return tree; }
             const row = <ActionSheetRow key="anezium-elevenlabs-transcription" label={ACTION_LABEL} icon={<ActionSheetRow.Icon {...icon} />} onPress={() => openSheet(rt, target, error)} />;
-            rt.defer({ placement: `Inserted at the top of the single eligible native group (${plan.groups} visible group(s)). Actual client structure to be verified on a device.` });
+            rt.defer({ placement: `Inserted at the top of the single eligible native group (${plan.groups} visible group(s)).` });
             return appendToGroup(tree, plan.group, row) as ReactElement;
           } catch { rt.defer({ problem: 'Voice message menu not supported; no transfer triggered.' }); return tree; }
         });

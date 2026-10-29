@@ -2,9 +2,9 @@
   "format": 1,
   "id": "anezium.elevenlabs-transcription",
   "name": "ElevenLabs Transcription (experimental)",
-  "description": "Local candidate: Android Keystore vault, Fable UI and opt-in transcription; others' voice messages transcribed locally; your own get a transcript reply once sent. Android runtime not validated, publication subject to review.",
+  "description": "Transcribe Discord voice messages with ElevenLabs. API key kept in the Android Keystore; automatic transcription is opt-in. Not yet verified on a physical Android device.",
   "author": "Anezium / Forge",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "dependencies": {
     "valenced.api": {"version": "=1.0.0"},
     "discord": {"version": "=352.6"}

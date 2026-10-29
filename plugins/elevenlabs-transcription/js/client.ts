@@ -15,7 +15,7 @@ interface Preferences { get(): Promise<AutoPreferences>; set(value: AutoPreferen
 interface Runtime {
   alive: boolean; key: string; engine: Transcriber;
   diagnostics: { compatible: boolean; ready: boolean };
-  notifyAuto(ready: boolean, mode: AutoMode, problem?: string): void;
+  notifyAuto(ready: boolean, mode: AutoMode, problem?: string, status?: string): void;
 }
 interface HTTP { post(options: { url: string; body: object; retries: number; oldFormErrors: boolean }): Promise<{ status?: number; body?: unknown }> }
 interface Endpoints { MESSAGES(channel: string): string }
@@ -65,7 +65,7 @@ export class ClientAutomation {
         && typeof store('PermissionStore')?.can === 'function';
     } catch { return false; }
   }
-  private notify(problem?: string) { if (!this.stopped) { this.ensurePipeline(); this.rt.notifyAuto(this.ready(), this.mode(), problem); } }
+  private notify(problem?: string, status?: string) { if (!this.stopped) { this.ensurePipeline(); this.rt.notifyAuto(this.ready(), this.mode(), problem, status); } }
   private clearLocal() {
     const entries = [...this.local.values()]; this.local.clear();
     for (const { target } of entries) { this.changed.add(target.messageId); this.refresh(target); }
@@ -168,7 +168,7 @@ export class ClientAutomation {
     };
     this.pipeline?.configure(this.mode(), { externalProcessingAndCost: this.settings.external, publishOwnReplies: this.settings.publish });
     const revision = ++this.revision;
-    this.notify('Consents are being saved; withdrawals are already effective for this session.');
+    this.notify('', 'Consents are being saved; withdrawals are already effective for this session.');
     const operation = this.writes.then(async () => {
       if (this.stopped) throw new SafeError('stopped', 'Plugin stopped.');
       if ((mode.incoming || mode.ownReplies) && !this.ready()) throw new SafeError('hooks', 'Automatic modules unavailable or ambiguous.');

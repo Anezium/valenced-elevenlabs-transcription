@@ -1,6 +1,6 @@
 {
   "name": "valenced-elevenlabs-transcription",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "license": "GPL-3.0-only",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "tsc -p tsconfig.test.json && node --test build/tests/tests/*.test.js",
     "build:cli": "tsc -p vendor/cli/tsconfig.json",
     "bundle": "node vendor/cli/dist/main.js build elevenlabs-transcription",
-    "test:lifecycle": "node --test tests/lifecycle.test.mjs tests/client.test.mjs tests/ui.test.mjs tests/consent-revocation.test.mjs tests/consent-write-race.test.mjs tests/auto-boundaries.test.mjs",
+    "test:lifecycle": "node --test tests/lifecycle.test.mjs tests/client.test.mjs tests/ui.test.mjs tests/consent-revocation.test.mjs tests/consent-write-race.test.mjs tests/auto-boundaries.test.mjs tests/settings-redesign.test.mjs",
     "build:native": "python3 scripts/build-native.py",
     "package": "node scripts/package-dev.mjs",
     "verify": "npm run typecheck && npm test && npm run build:cli && npm run bundle && npm run test:lifecycle && npm run build:native && npm run package"

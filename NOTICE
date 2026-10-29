@@ -1,4 +1,4 @@
-ElevenLabs Transcription for Valenced — 0.2.1
+ElevenLabs Transcription for Valenced — 0.2.2
 
 The v0.2 client adapter reuses the RowManager rendering and MESSAGE_UPDATE
 refresh contracts from the examples message-logger/js/rows.ts and

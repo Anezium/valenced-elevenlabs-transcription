@@ -75,16 +75,16 @@ test('actual bundle: failed preference write never activates cost or posting; ma
  h.failStorage(true);await assert.rejects(rt.auto.configure({incoming:true,ownReplies:true}));await h.emit(h.voice(2,true));assert.equal(h.posts.length,0);assert.equal(h.calls.filter(x=>x==='stt').length,0);h.stop();await tick();
 });
 test('actual bundle: rendered settings switches persist separate initial cost/publication controls, never a key nor implied manual consent',async()=>{
- const h=clientHost();const rt=await h.ready();
+ const h=clientHost();const rt=await h.ready();rt.update({openAuto:true});
  const switches=()=>h.collect(h.definition.SettingsComponent()).filter(x=>x.type==='TableSwitchRow').map(x=>x.props);
  const rows=()=>h.collect(h.definition.SettingsComponent()).filter(x=>x.type===h.ActionSheetRow).map(x=>x.props);
- let incoming=switches().find(x=>x.label.startsWith('Others’ voice messages'));assert(incoming);assert.equal(incoming.disabled,false);assert.equal(incoming.value,false);
+ let incoming=switches().find(x=>x.label.startsWith('Transcribe others’ messages'));assert(incoming);assert.equal(incoming.disabled,false);assert.equal(incoming.value,false);
  assert.equal(rows().find(x=>x.label==='Turn off all automation'),undefined);
  incoming.onValueChange(true);await tick();assert.equal(h.prefs.incoming,true);assert.equal(h.prefs.ownReplies,false);assert.equal(h.prefs.publish,false);
- const own=switches().find(x=>x.label.startsWith('My voice messages'));own.onValueChange(true);await tick();assert.equal(h.prefs.ownReplies,true);assert.equal(h.prefs.publish,true);
+ const own=switches().find(x=>x.label.startsWith('Auto-publish my transcripts'));own.onValueChange(true);await tick();assert.equal(h.prefs.ownReplies,true);assert.equal(h.prefs.publish,true);
  assert.deepEqual(Object.keys(h.prefs).sort(),['accountId','external','incoming','manual','ownReplies','publish']);assert(!JSON.stringify(h.prefs).includes(rt.key));
  assert.deepEqual(h.prefs.manual,{external:false,publish:false,accountId:''});assert.deepEqual(rt.consent.mode(),{external:false,publish:false}); // automatic consent never implies manual consent
- assert.equal(switches().find(x=>x.label.startsWith('Others’ voice messages')).value,true);
+ assert.equal(switches().find(x=>x.label.startsWith('Transcribe others’ messages')).value,true);
  rows().find(x=>x.label==='Turn off all automation').onPress();await tick();assert.equal(h.prefs.external,false);assert.equal(h.prefs.publish,false);h.stop();await tick();
 });
 test('actual bundle: manual recovery requires explicit publish consent and own cached vocal',async()=>{

@@ -43,7 +43,7 @@ fun main() = runBlocking {
     val facade = Class.forName("app.anezium.elevenlabs.ElevenLabsPlugin")
     val getter = facade.declaredMethods.single { java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 0 && PluginBuilder::class.java.isAssignableFrom(it.returnType) }
     val builder = getter.invoke(null) as PluginBuilder
-    val plugin = builder.build(PluginManifest("anezium.elevenlabs-transcription", "Test", "", "", version=Version.parse("0.2.1")))
+    val plugin = builder.build(PluginManifest("anezium.elevenlabs-transcription", "Test", "", "", version=Version.parse("0.2.2")))
     plugin.start(scope)
     verify(handlers.keys == setOf("load", "save", "delete").map { "anezium.elevenlabs.vault.$it" }.toSet() + "anezium.elevenlabs.auto.reserve")
     for (handler in handlers.values) verify(handler(emptyList()) == mapOf("ok" to false))

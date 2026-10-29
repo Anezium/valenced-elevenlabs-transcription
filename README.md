@@ -1,8 +1,8 @@
 # ElevenLabs Transcription for Valenced
 
-Version `0.2.1`, experimental, NOT validated on Android and NOT validated end to end with ElevenLabs/Discord. This release is not a device certification. Version `0.1.0` and the previous preview `0.2.0-dev` remain available, with their tags and assets untouched.
+Version `0.2.2`, experimental, NOT validated on Android and NOT validated end to end with ElevenLabs/Discord. This release is not a device certification. Versions `0.1.0`, `0.2.0-dev` and `0.2.1` remain available, with their tags and assets untouched.
 
-`0.2.1` changes only the visible texts compared to `0.2.0-dev`: the whole plugin UI, its messages and this README are now in English, and the published reply is labelled `Transcript:` (previously a longer French label). Behavior, consents, limits and the native bridge are unchanged. The version number was bumped from `0.2.0-dev` because the host updater offers an update only for a strictly higher version: an identical version string would never be proposed.
+`0.2.2` redesigns the settings screen following a UI/UX review: a status line that always says what to do next, a single API key row with Add/Replace/Remove, manual and automatic transcription grouped separately, the automatic options and the diagnostics in collapsible sections (the automatic summary row always shows Off / On / Unavailable), and shorter wording in the voice-message sheet. The consent model, limits, native bridge and the double-send warning are unchanged. Developer caveats were moved out of the main screen; a short line “Not yet verified on a device” remains under Status and about. The UI and this README stay in English and the published reply is still labelled `Transcript:`. The version was bumped from `0.2.1` because the host updater offers an update only for a strictly higher version.
 
 ## Repository and updates
 
@@ -10,15 +10,15 @@ Keep exactly the index already added in Valenced:
 
 https://raw.githubusercontent.com/Anezium/valenced-elevenlabs-transcription/main/index.json
 
-The `latest` channel deliberately points to `0.2.1`, as do `testing` and `beta`. Here it designates the current stable release `0.2.1`. The host updater follows the channel registered for this repository; version 0.2.1 is higher than 0.2.0-dev and 0.1.0 according to its comparator. No new index or URL change is needed. An older install from a file may not follow the repository: check its source in the plugin settings.
+The `latest` channel deliberately points to `0.2.2`, as do `testing` and `beta`. Here it designates the current stable release `0.2.2`. The host updater follows the channel registered for this repository; version 0.2.2 is higher than 0.2.1, 0.2.0-dev and 0.1.0 according to its comparator. No new index or URL change is needed. An older install from a file may not follow the repository: check its source in the plugin settings.
 
 In Settings > Valenced > Plugins, refresh the repositories, then check the proposed update and confirm it. A reload may be necessary. None of these steps has been performed on a phone for this publication; the exact presentation depends on the host.
 
 Alternative, plugin ZIP without extraction:
-https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.1/anezium.elevenlabs-transcription@0.2.1.zip
+https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.2.2/anezium.elevenlabs-transcription@0.2.2.zip
 
-The source ZIP is NOT installable as a plugin. SHA256 of the plugin ZIP (47,508 bytes):
-`1ffcaab4f13982430b77c47085df4801807666b7d6e9a78b7337bddeb09fd450`.
+The source ZIP is NOT installable as a plugin. SHA256 of the plugin ZIP (47,328 bytes):
+`fcf170039e2a02f5bce0c9503cea040173933dfdf62a9f3e3f99b8449e774ec1`.
 
 ## Target and native bridge
 
@@ -44,15 +44,15 @@ Background, stop, key/account/channel change or revocation invalidate in-flight 
 
 ## Verification and caveats
 
-Rebuild of the exact candidate: typecheck, 56 TS tests, 49 tests of the real bundle with a synthetic host, 2 extra UI probes, 41 JVM assertions, compilation against the real host API, Kotlin and D8 successful. Vendor/secrets audit and Fable provenance verified; npm audit with no reported vulnerability. A pattern scan is not absolute proof of the absence of secrets. All of these checks were re-run for 0.2.1 with `npm run verify` (typecheck, 56 TS tests, 49 real-bundle tests, 41 JVM assertions, native build against the pinned host source, deterministic package).
+Rebuild of the exact candidate: typecheck, 56 TS tests, 59 tests of the real bundle with a synthetic host, 2 extra UI probes, 41 JVM assertions, compilation against the real host API, Kotlin and D8 successful. Vendor/secrets audit and Fable provenance verified; npm audit with no reported vulnerability. A pattern scan is not absolute proof of the absence of secrets. All of these checks were re-run for 0.2.2 with `npm run verify` (typecheck, 56 TS tests, 59 real-bundle tests, 41 JVM assertions, native build against the pinned host source, deterministic package).
 
-UI actually generated by `claude-fable-5-1` / effort high with no substitution; its run ended on HTTP429, not on a final success. Fixes and the build were verified independently. The 0.2.1 texts are an English translation of that UI.
+UI actually generated by `claude-fable-5-1` / effort high with no substitution; its run ended on HTTP429, not on a final success. Fixes and the build were verified independently. The 0.2.1 texts are an English translation of that UI; 0.2.2 reworks the settings screen after a separate read-only UI/UX review.
 
 NOT verified: AndroidKeyStore/AtomicFile on a device, real Android stop/reload, menu 352.6, visual/mobile/TalkBack rendering, real client hooks and an actual Discord reply. No device install, user audio, paid STT call or Discord POST was run in this publication. Synthetic tests prove none of these points. Final v0.2 validation remains open; any real test requires a separate agreement.
 
 ## Stopping and rollback
 
-Disable the automatic modes, then use “Delete the key and results” before uninstalling the plugin. The vault and the Keystore alias may survive uninstalling the plugin alone. No forensic erasure promise. Clear the clipboard if a result was copied; messages already published are not removed automatically.
+Disable the automatic modes, then use “Remove key” (Settings > API key; it also cancels transfers and clears local transcripts) before uninstalling the plugin. The vault and the Keystore alias may survive uninstalling the plugin alone. No forensic erasure promise. Clear the clipboard if a result was copied; messages already published are not removed automatically.
 
 The `legacy` channel keeps 0.1.0, as well as the original download:
 https://github.com/Anezium/valenced-elevenlabs-transcription/releases/download/v0.1.0/anezium.elevenlabs-transcription@0.1.0.zip
@@ -69,6 +69,6 @@ Node >=22.18 (verified 22.21.1), Python >=3.11. Local toolchain only, see V020_T
     node scripts/audit-dev.mjs
     npm audit --audit-level=high
 
-Output: `dist/anezium.elevenlabs-transcription@0.2.1.zip`. `verify` does not modify the public index. The official CLI generates the index from the ZIPs and the explicit channels in repo.config.json. PREVIEW_020.md documents the distribution checks. V020_TECHNICAL.md and V020_DIAGNOSTIC.md keep the history of the steps, not the current authorization state; these engineering documents are still in French.
+Output: `dist/anezium.elevenlabs-transcription@0.2.2.zip`. `verify` does not modify the public index. The official CLI generates the index from the ZIPs and the explicit channels in repo.config.json. PREVIEW_020.md documents the distribution checks. V020_TECHNICAL.md and V020_DIAGNOSTIC.md keep the history of the steps, not the current authorization state; these engineering documents are still in French.
 
 GPL-3.0-only, without warranty; attributions in NOTICE, external APIs and pinned vendored sources. No official affiliation with Discord, Valenced or ElevenLabs.
